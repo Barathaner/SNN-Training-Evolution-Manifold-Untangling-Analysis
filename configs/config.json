@@ -1,0 +1,15 @@
+{
+    "activity_dir": "./activity_logs",
+    "output_dir": "./manifold_embeddings",
+    "layer_filter": "output",
+    "n_time_bins": null,
+    "methods": [
+      {
+        "name": "umap",
+        "n_components": 3,
+        "n_neighbors": [10, 20, 50]
+      }
+    ]
+  }
+  
+  

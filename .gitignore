@@ -5,6 +5,10 @@ __pycache__/
 
 # C extensions
 *.so
+*.egg-info/
+/data/input
+/data/dimensionality_reduction_embeddings
+/data/activity_logs
 
 # Distribution / packaging
 .Python
