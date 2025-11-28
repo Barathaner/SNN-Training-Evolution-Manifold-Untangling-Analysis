@@ -1,0 +1,2 @@
+# SNN-Training-Evolution-Manifold-Untangling-Analysis
+The learning process in Spiking Neural Networks can be geometrically explained as the untangling of the layer manifolds over epochs into linearly separable classes. This library provides a pipeline and an example to analyse your spiking data from the input and your snntorch model. It is based on Manifold Capacity, and dimensionalityreduction (UMAP)
