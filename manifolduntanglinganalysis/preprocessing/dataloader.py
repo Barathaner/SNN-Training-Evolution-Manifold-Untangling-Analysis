@@ -18,6 +18,7 @@ class TransformedDataset(Dataset):
 
 def load_filtered_shd_dataloader(
     label_range=range(0, 10),
+    data_path="./data",
     transform=None,
     train=True,
     batch_size=32,
@@ -40,7 +41,7 @@ def load_filtered_shd_dataloader(
     Returns:
         torch.utils.data.DataLoader: Dataloader für das vorbereitete SHD-Dataset
     """
-    dataset_full = tonic.datasets.SHD(save_to="./data", train=train, transform=None)
+    dataset_full = tonic.datasets.SHD(save_to=data_path, train=train, transform=None)
 
     label_range = set(label_range)
     filtered_indices = [

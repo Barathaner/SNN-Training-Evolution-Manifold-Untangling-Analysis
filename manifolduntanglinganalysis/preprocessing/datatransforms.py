@@ -211,12 +211,15 @@ def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700,
         # - Jedes Bin = genau (fixed_duration / n_time_bins) μs
         # - Kürzere Samples: Leere Bins am Ende
         # - Längere Samples (>95%): Events nach fixed_duration werden ignoriert
-        transforms.ToFrame(
+         transforms.ToFrame(
             sensor_size=sensor_size, 
-            n_time_bins=n_time_bins,
-            include_incomplete=False
-        ),
+            time_window=time_window,
+            start_time=0.0,
+            end_time=fixed_duration,
+            include_incomplete=True
+        )
         
         # 4. Varianz stabilisieren
         #SqrtTransform()
     ])
+    
