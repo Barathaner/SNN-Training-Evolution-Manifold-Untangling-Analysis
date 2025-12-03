@@ -3,6 +3,10 @@ __pycache__/
 *.py[codz]
 *$py.class
 cache/
+.vscode/
+launch.json
+settings.json
+.cursor/
 *.hdf5
 *.zip
 *.h5

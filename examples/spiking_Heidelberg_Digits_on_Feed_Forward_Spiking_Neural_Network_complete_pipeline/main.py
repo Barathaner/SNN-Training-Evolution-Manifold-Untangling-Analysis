@@ -5,7 +5,7 @@ import manifolduntanglinganalysis.preprocessing.dataloader as dataloader
 import models.trainer as trainer
 import models.sffnn_batched as sffnn_batched
 import manifolduntanglinganalysis.metrics.performance_metrics as metrics
-import manifolduntanglinganalysis.monitoring as monitoring
+from manifolduntanglinganalysis.ActivityMonitor import ActivityMonitor
 import numpy as np
 import random
 import torch
@@ -61,25 +61,20 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(net.parameters(), lr=5e-4)
     num_epochs = 20
     
-    # Spike Activity Monitoring initialisieren
-    activity_log_dir = os.path.join(project_root, "data", "activity_logs")
-    monitor = monitoring.SpikeActivityMonitor(
-        model=net,
-        layer_names=['lif0', 'lif1', 'lif2', 'lif3'],  # Welche Layer überwachen?
-        save_dir=activity_log_dir,
-        collect_spikes=True,
-        collect_membrane=True
-    )
+    # Konfiguration für Activity Monitoring
+    MONITORING_CONFIG = {
+        'num_samples': 64,  # Anzahl der Samples, die überwacht werden sollen
+        'layer_names': ['lif0', 'lif1', 'lif2', 'lif3'],  # Zu überwachende Layer
+        'save_dir': os.path.join(project_root, "data", "activity_logs")
+    }
     
-    # Monitoring starten (Hooks registrieren)
-    monitor.start_monitoring()
-    
+   
     for epoch in range(1, num_epochs + 1):
         print(f"\n{'='*80}")
         print(f"Epoch {epoch}/{num_epochs}")
         print(f"{'='*80}")
         
-        # Training (Aktivitäten werden automatisch gesammelt)
+        # Training (OHNE Monitoring - wir wollen nur Test-Aktivitäten)
         trainer.train_one_epoch_batched(
             net=net,
             dataloader=train_dataloader,
@@ -88,14 +83,33 @@ if __name__ == "__main__":
             device=device
         )
         
-        # Aktivitäten für diese Epoche speichern
-        monitor.save_epoch_activities(epoch=epoch, num_steps=net.num_steps)
+        # Test-Evaluation MIT Monitoring
+        print(f"\n🧪 Test-Evaluation nach Epoch {epoch}:")
+        net.eval()
         
-        # Aktivitäten löschen für nächste Epoche
-        monitor.clear_activities()
+        # Activity Monitoring: Überwache und speichere Spikes
+        activity_monitor = ActivityMonitor(net)
+        activity_monitor.enable_monitoring(lif_layer_names=MONITORING_CONFIG['layer_names'])
+        
+        filepaths = activity_monitor.monitor_and_save_samples(
+            dataloader=test_dataloader,
+            num_samples=MONITORING_CONFIG['num_samples'],
+            layer_names=MONITORING_CONFIG['layer_names'],
+            save_dir=MONITORING_CONFIG['save_dir'],
+            epoch=epoch,
+            device=device,
+            verbose=True
+        )
+        
+        # Monitoring deaktivieren
+        activity_monitor.disable_monitoring()
+
+        ## 
+        accuracy = metrics.print_full_dataloader_accuracy_batched(net, test_dataloader)
+        print(f"\n   Test Accuracy: {accuracy:.4f}")
+        
+        net.train()  # Zurück zum Trainingsmodus
     
-    # Monitoring stoppen (Hooks entfernen)
-    monitor.stop_monitoring()
         
     
     # Testing

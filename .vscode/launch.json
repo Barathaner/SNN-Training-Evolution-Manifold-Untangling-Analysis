@@ -9,7 +9,7 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "python": "${workspaceFolder}/venv/bin/python",
-            "pythonPath": "${workspaceFolder}/venv/bin/python",
+            "python": "${workspaceFolder}/venv/bin/python",
             "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"

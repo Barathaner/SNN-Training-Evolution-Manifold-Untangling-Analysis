@@ -23,8 +23,6 @@ class Net(nn.Module):
         self.lif3 = snn.Leaky(beta=beta)
         
         self.num_steps = num_steps
-        # Container für Aufzeichnungen über Zeit (wird im forward gefüllt)
-        self.recordings = {}
 
     def forward(self, x):
         # x shape: [B, T, num_inputs]
@@ -32,18 +30,12 @@ class Net(nn.Module):
         assert T == self.num_steps, f"Eingabezeitdimension ({T}) stimmt nicht mit num_steps ({self.num_steps}) überein."
 
         # Initialisiere hidden states für alle Layer
-        mem0 = torch.zeros(B, self.fc0.out_features, device=x.device)
-        mem1 = torch.zeros(B, self.fc1.out_features, device=x.device)
-        mem2 = torch.zeros(B, self.fc2.out_features, device=x.device)
-        mem3 = torch.zeros(B, self.fc3.out_features, device=x.device)
+        mem0 = self.lif0.reset_mem()
+        mem1 = self.lif1.reset_mem()
+        mem2 = self.lif2.reset_mem()
+        mem3 = self.lif3.reset_mem()
 
-        # Recording-Listen für alle Layer
-        spk0_rec = []
-        mem0_rec = []
-        spk1_rec = []
-        mem1_rec = []
-        spk2_rec = []
-        mem2_rec = []
+        # Recording-Listen nur für Output-Layer (für Return-Wert)
         spk3_rec = []
         mem3_rec = []
 
@@ -66,36 +58,12 @@ class Net(nn.Module):
             cur3 = self.fc3(spk2)
             spk3, mem3 = self.lif3(cur3, mem3)
             
-            # Speichere Aktivitäten
-            spk0_rec.append(spk0)
-            mem0_rec.append(mem0)
-            spk1_rec.append(spk1)
-            mem1_rec.append(mem1)
-            spk2_rec.append(spk2)
-            mem2_rec.append(mem2)
+            # Speichere nur Output-Layer Aktivitäten (für Return-Wert)
             spk3_rec.append(spk3)
             mem3_rec.append(mem3)
 
         # [T, B, features] → [B, T, features]
-        spk0_bt = torch.stack(spk0_rec, dim=0).permute(1, 0, 2)
-        mem0_bt = torch.stack(mem0_rec, dim=0).permute(1, 0, 2)
-        spk1_bt = torch.stack(spk1_rec, dim=0).permute(1, 0, 2)
-        mem1_bt = torch.stack(mem1_rec, dim=0).permute(1, 0, 2)
-        spk2_bt = torch.stack(spk2_rec, dim=0).permute(1, 0, 2)
-        mem2_bt = torch.stack(mem2_rec, dim=0).permute(1, 0, 2)
         spk3_bt = torch.stack(spk3_rec, dim=0).permute(1, 0, 2)
         mem3_bt = torch.stack(mem3_rec, dim=0).permute(1, 0, 2)
-
-        # Aufzeichnungen für spätere Auswertung (auf CPU, ohne Gradienten)
-        self.recordings = {
-            "spk0": spk0_bt.detach().cpu(),  # Hidden Layer 0 (Input-Größe)
-            "mem0": mem0_bt.detach().cpu(),
-            "spk1": spk1_bt.detach().cpu(),  # Hidden Layer 1
-            "mem1": mem1_bt.detach().cpu(),
-            "spk2": spk2_bt.detach().cpu(),  # Hidden Layer 2
-            "mem2": mem2_bt.detach().cpu(),
-            "spk3": spk3_bt.detach().cpu(),  # Output Layer
-            "mem3": mem3_bt.detach().cpu(),
-        }
 
         return spk3_bt, mem3_bt

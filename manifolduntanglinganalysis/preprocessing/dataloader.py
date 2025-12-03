@@ -22,7 +22,7 @@ def load_filtered_shd_dataloader(
     transform=None,
     train=True,
     batch_size=32,
-    shuffle=True,
+    shuffle=False,
     drop_last=True,
     num_workers=0,
 ):
