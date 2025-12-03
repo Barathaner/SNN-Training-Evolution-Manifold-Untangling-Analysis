@@ -3,6 +3,29 @@ Funktionen zum Extrahieren von Metadaten aus dem SHD-Dataloader für einen Batch
 """
 import numpy as np
 from typing import Dict, List, Optional
+from torch.utils.data import DataLoader
+
+# Import für abstrakte Basisklasse (mit verzögertem Import um zirkuläre Imports zu vermeiden)
+from abc import ABC, abstractmethod
+
+class MetadataExtractor(ABC):
+    """
+    Abstrakte Basisklasse für Metadaten-Extraktoren.
+    Wird auch in ActivityMonitor definiert, aber hier für bessere Verfügbarkeit.
+    """
+    @abstractmethod
+    def extract(self, dataloader: DataLoader, batch_idx: int) -> Dict[str, np.ndarray]:
+        """
+        Extrahiert Metadaten für einen spezifischen Batch.
+        
+        Args:
+            dataloader: Der DataLoader
+            batch_idx: Index des Batches (0-basiert)
+        
+        Returns:
+            Dictionary mit Metadaten-Arrays (z.B. {'speakers': [...], 'sample_ids': [...]})
+        """
+        pass
 
 
 def _get_dataset_components(dataloader):
@@ -88,3 +111,24 @@ def extract_batch_metadata_simple(dataloader) -> Dict[str, np.ndarray]:
         - 'original_sample_ids': Array von originalen Sample-IDs (vor Filterung)
     """
     return extract_batch_metadata(dataloader, batch_idx=0)
+
+
+class SHDMetadataExtractor(MetadataExtractor):
+    """
+    Konkrete Implementierung von MetadataExtractor für SHD-Datasets.
+    """
+    
+    def extract(self, dataloader: DataLoader, batch_idx: int = 0) -> Dict[str, np.ndarray]:
+        """
+        Extrahiert Metadaten für einen spezifischen Batch aus dem SHD-Dataloader.
+        
+        Args:
+            dataloader: Der DataLoader
+            batch_idx: Index des Batches (0-basiert)
+        
+        Returns:
+            Dictionary mit:
+            - 'speakers': Array von Speaker-IDs für jeden Sample im Batch
+            - 'original_sample_ids': Array von originalen Sample-IDs (vor Filterung)
+        """
+        return extract_batch_metadata(dataloader, batch_idx=batch_idx)

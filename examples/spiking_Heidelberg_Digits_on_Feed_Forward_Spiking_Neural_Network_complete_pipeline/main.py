@@ -6,6 +6,7 @@ import models.trainer as trainer
 import models.sffnn_batched as sffnn_batched
 import manifolduntanglinganalysis.metrics.performance_metrics as metrics
 from manifolduntanglinganalysis.ActivityMonitor import ActivityMonitor
+from manifolduntanglinganalysis.preprocessing.metadata_extractor import SHDMetadataExtractor
 import numpy as np
 import random
 import torch
@@ -88,7 +89,16 @@ if __name__ == "__main__":
         net.eval()
         
         # Activity Monitoring: Überwache und speichere Spikes
-        activity_monitor = ActivityMonitor(net)
+        # Erstelle MetadataExtractor für SHD
+        metadata_extractor = SHDMetadataExtractor()
+        # Input-Transformation für SHD-Format (optional, da als Fallback vorhanden)
+        input_transform = lambda x: x.squeeze(2) if x.ndim == 4 else x
+        
+        activity_monitor = ActivityMonitor(
+            net,
+            metadata_extractor=metadata_extractor,
+            input_transform=input_transform
+        )
         activity_monitor.enable_monitoring(lif_layer_names=MONITORING_CONFIG['layer_names'])
         
         filepaths = activity_monitor.monitor_and_save_samples(

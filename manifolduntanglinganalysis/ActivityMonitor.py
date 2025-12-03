@@ -3,18 +3,53 @@ from collections import defaultdict
 import h5py
 import numpy as np
 from pathlib import Path
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Callable, Union
 from torch.utils.data import DataLoader
+from abc import ABC, abstractmethod
+
+# Import MetadataExtractor von metadata_extractor um Duplikate zu vermeiden
+try:
+    from manifolduntanglinganalysis.preprocessing.metadata_extractor import MetadataExtractor
+except ImportError:
+    # Fallback falls Import nicht möglich
+    class MetadataExtractor(ABC):
+        """
+        Abstrakte Basisklasse für Metadaten-Extraktoren.
+        Ermöglicht verschiedene Implementierungen für verschiedene Datasets.
+        """
+        
+        @abstractmethod
+        def extract(self, dataloader: DataLoader, batch_idx: int) -> Dict[str, np.ndarray]:
+            """
+            Extrahiert Metadaten für einen spezifischen Batch.
+            
+            Args:
+                dataloader: Der DataLoader
+                batch_idx: Index des Batches (0-basiert)
+            
+            Returns:
+                Dictionary mit Metadaten-Arrays (z.B. {'speakers': [...], 'sample_ids': [...]})
+            """
+            pass
+
 
 class ActivityMonitor:
-    def __init__(self, model):
+    def __init__(self, 
+                 model,
+                 metadata_extractor: Optional[MetadataExtractor] = None,
+                 input_transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None):
         """
         Initialisiert den ActivityMonitor mit leeren Buffern für Spike-Aktivitäten.
         
         Args:
             model: Das PyTorch-Modell, das überwacht werden soll
+            metadata_extractor: Optional, Extractor für Metadaten (für verschiedene Datasets)
+            input_transform: Optional, Funktion zur Transformation der Input-Daten
+                           (z.B. lambda x: x.squeeze(2) if x.ndim == 4 else x)
         """
         self.model = model
+        self.metadata_extractor = metadata_extractor
+        self.input_transform = input_transform
         # Dictionary: layer_name -> Liste von Spike-Tensoren (ein Tensor pro Zeitschritt)
         self.spike_buffer = defaultdict(list)
         # Dictionary: layer_name -> Liste von Input-Tensoren (optional, für Debugging)
@@ -325,7 +360,10 @@ class ActivityMonitor:
                    save_dir: str,
                    filename: Optional[str] = None,
                    epoch: Optional[int] = None,
-                   include_metadata: bool = True) -> str:
+                   include_metadata: bool = True,
+                   spikes_data: Optional[Union[np.ndarray, torch.Tensor, Dict[str, np.ndarray]]] = None,
+                   metadata: Optional[Dict] = None,
+                   labels: Optional[Union[np.ndarray, torch.Tensor]] = None) -> str:
         """
         Speichert die Spikes eines Layers als HDF5-Datei im Tonic-Format (t, x, p).
         
@@ -340,6 +378,10 @@ class ActivityMonitor:
             filename: Optional, custom Dateiname. Wenn None, wird automatisch generiert.
             epoch: Optional, Epoch-Nummer für automatischen Dateinamen
             include_metadata: Wenn True, werden Metadaten und Labels mitgespeichert
+            spikes_data: Optional, direkt übergebene Spike-Daten [Batch, T, Features]
+                       (numpy array, torch Tensor oder Dict). Wenn None, wird aus Buffer gelesen.
+            metadata: Optional, Metadaten-Dictionary (überschreibt self.batch_metadata)
+            labels: Optional, Labels-Array (überschreibt self.current_labels)
         
         Returns:
             Pfad zur gespeicherten Datei
@@ -348,11 +390,23 @@ class ActivityMonitor:
             # Automatischer Dateiname: epoch_001_lif1_spk_events.h5
             path = monitor.save_as_h5('lif1', 'data/activity_logs', epoch=1)
             
-            # Custom Dateiname
-            path = monitor.save_as_h5('lif1', 'data/activity_logs', filename='my_spikes.h5')
+            # Mit direkt übergebenen Daten
+            path = monitor.save_as_h5('lif1', 'data/activity_logs', 
+                                     spikes_data=spikes_array, 
+                                     metadata=my_metadata,
+                                     labels=my_labels)
         """
-        # Hole Spikes für diesen Layer
-        spikes = self.get_spikes_bt(layer_name=layer_name)
+        # Hole Spikes: Entweder direkt übergeben oder aus Buffer
+        if spikes_data is not None:
+            if isinstance(spikes_data, dict):
+                spikes = spikes_data.get(layer_name)
+            elif isinstance(spikes_data, (np.ndarray, torch.Tensor)):
+                spikes = spikes_data
+            else:
+                raise ValueError(f"Ungültiger Typ für spikes_data: {type(spikes_data)}")
+        else:
+            # Fallback: Aus Buffer lesen
+            spikes = self.get_spikes_bt(layer_name=layer_name)
         
         if spikes is None:
             raise ValueError(f"Keine Spikes für Layer '{layer_name}' gefunden")
@@ -361,7 +415,11 @@ class ActivityMonitor:
         if isinstance(spikes, torch.Tensor):
             spikes_np = spikes.numpy()
         else:
-            spikes_np = spikes
+            spikes_np = np.asarray(spikes)
+        
+        # Validiere Shape
+        if spikes_np.ndim != 3:
+            raise ValueError(f"Spikes müssen Shape [Batch, T, Features] haben, bekam {spikes_np.shape}")
         
         # Konvertiere zu Tonic-Format (t, x, p) pro Sample
         events_per_sample = self._convert_spikes_to_tonic_format(spikes_np)
@@ -402,9 +460,10 @@ class ActivityMonitor:
             f.attrs['format'] = 'tonic_events'  # (t, x, p)
             
             # Metadaten speichern, wenn vorhanden
-            if include_metadata and self.batch_metadata:
+            metadata_to_save = metadata if metadata is not None else self.batch_metadata
+            if include_metadata and metadata_to_save:
                 metadata_group = f.create_group('metadata')
-                for sample_key, sample_meta in self.batch_metadata.items():
+                for sample_key, sample_meta in metadata_to_save.items():
                     sample_group = metadata_group.create_group(sample_key)
                     for key, value in sample_meta.items():
                         if isinstance(value, (int, float, np.number)):
@@ -415,8 +474,9 @@ class ActivityMonitor:
                             sample_group.attrs[key] = str(value)
             
             # Labels speichern, wenn vorhanden
-            if include_metadata and self.current_labels is not None:
-                labels_np = self.current_labels.numpy() if isinstance(self.current_labels, torch.Tensor) else np.array(self.current_labels)
+            labels_to_save = labels if labels is not None else self.current_labels
+            if include_metadata and labels_to_save is not None:
+                labels_np = labels_to_save.numpy() if isinstance(labels_to_save, torch.Tensor) else np.asarray(labels_to_save)
                 f.create_dataset('labels', data=labels_np, compression='gzip')
                 f['labels'].attrs['description'] = 'Ground truth labels for each sample in the batch'
         
@@ -429,7 +489,9 @@ class ActivityMonitor:
                                  save_dir: str,
                                  epoch: Optional[int] = None,
                                  device: torch.device = torch.device('cpu'),
-                                 verbose: bool = True) -> Dict[str, str]:
+                                 verbose: bool = True,
+                                 metadata_extractor: Optional[MetadataExtractor] = None,
+                                 input_transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None) -> Dict[str, str]:
         """
         Überwacht und speichert Spikes für eine bestimmte Anzahl von Samples.
         Verwendet immer die gleichen Samples (die ersten N) für Vergleichbarkeit.
@@ -443,6 +505,8 @@ class ActivityMonitor:
             epoch: Optional, Epoch-Nummer für Dateinamen
             device: Device für die Berechnung
             verbose: Wenn True, werden Fortschrittsmeldungen ausgegeben
+            metadata_extractor: Optional, Extractor für Metadaten (überschreibt self.metadata_extractor)
+            input_transform: Optional, Funktion zur Input-Transformation (überschreibt self.input_transform)
         
         Returns:
             Dictionary mit gespeicherten Dateipfaden: {layer_name: filepath}
@@ -456,8 +520,9 @@ class ActivityMonitor:
                 epoch=1
             )
         """
-        # Import hier, um zirkuläre Imports zu vermeiden
-        from manifolduntanglinganalysis.preprocessing.metadata_extractor import extract_batch_metadata
+        # Verwende übergebene Extractor/Transform oder die aus __init__
+        extractor = metadata_extractor or self.metadata_extractor
+        transform = input_transform or self.input_transform
         
         # Berechne, wie viele Batches benötigt werden
         batch_size = dataloader.batch_size
@@ -483,26 +548,32 @@ class ActivityMonitor:
             samples_in_batch = min(batch_size, num_samples - samples_collected)
             
             # Events vorbereiten
-            if events.ndim == 4:
-                events = events.squeeze(2)
             events = events.to(device).float()
+            # Wende Input-Transformation an, falls vorhanden
+            if transform is not None:
+                events = transform(events)
+            # Fallback: Standard-Transformation für SHD-Format (wenn keine Transform angegeben)
+            elif events.ndim == 4:
+                events = events.squeeze(2)
+            
             labels = labels.to(device)
             
             # Nimm nur die benötigten Samples aus dem Batch
             events = events[:samples_in_batch]
             labels = labels[:samples_in_batch]
             
-            # Metadaten extrahieren
+            # Metadaten extrahieren (nur wenn Extractor vorhanden)
             batch_metadata_dict = {}
-            try:
-                batch_metadata = extract_batch_metadata(dataloader, batch_idx=batch_idx)
-                # Nimm nur die benötigten Samples aus den Metadaten
-                for key in batch_metadata:
-                    batch_metadata[key] = batch_metadata[key][:samples_in_batch]
-                batch_metadata_dict = batch_metadata
-            except Exception as e:
-                if verbose:
-                    print(f"⚠️ Warnung: Metadaten konnten nicht extrahiert werden: {e}")
+            if extractor is not None:
+                try:
+                    batch_metadata = extractor.extract(dataloader, batch_idx)
+                    # Nimm nur die benötigten Samples aus den Metadaten
+                    for key in batch_metadata:
+                        batch_metadata[key] = batch_metadata[key][:samples_in_batch]
+                    batch_metadata_dict = batch_metadata
+                except Exception as e:
+                    if verbose:
+                        print(f"⚠️ Warnung: Metadaten konnten nicht extrahiert werden: {e}")
             
             # Labels setzen
             self.set_current_labels(labels)
@@ -559,28 +630,31 @@ class ActivityMonitor:
         
         # Speichere Spikes für jeden Layer (mit allen Samples)
         saved_filepaths = {}
+        # Bereite Metadaten für Speicherung vor
+        combined_metadata_dict = {}
+        if all_metadata_accumulated:
+            for key in all_metadata_accumulated[0].keys():
+                combined_metadata_dict[key] = np.array([meta[key] for meta in all_metadata_accumulated])
+            # Konvertiere zu sample-basiertem Format
+            metadata_for_save = {}
+            for i in range(len(all_metadata_accumulated)):
+                metadata_for_save[f'sample_{i}'] = all_metadata_accumulated[i]
+        else:
+            metadata_for_save = None
+        
         for layer_name in layer_names:
             if layer_name in combined_spikes:
-                # Temporär Spikes setzen
-                original_buffer = self.spike_buffer.copy()
-                # Konvertiere zurück zu Liste-Format für save_as_h5
-                # save_as_h5 erwartet spikes im Buffer, also müssen wir sie temporär setzen
-                # Aber eigentlich sollten wir save_as_h5 so anpassen, dass es direkt numpy arrays akzeptiert
-                # Für jetzt: Speichere direkt mit den kombinierten Spikes
                 try:
-                    # Temporärer Workaround: Setze Spikes direkt
-                    self.spike_buffer[layer_name] = [torch.from_numpy(combined_spikes[layer_name][:, t, :]) for t in range(combined_spikes[layer_name].shape[1])]
-                    
                     filepath = self.save_as_h5(
                         layer_name=layer_name,
                         save_dir=save_dir,
                         epoch=epoch,
-                        include_metadata=True
+                        include_metadata=True,
+                        spikes_data=combined_spikes[layer_name],
+                        metadata=metadata_for_save,
+                        labels=combined_labels
                     )
                     saved_filepaths[layer_name] = filepath
-                    
-                    # Stelle Buffer wieder her
-                    self.spike_buffer = original_buffer
                 except Exception as e:
                     if verbose:
                         print(f"⚠️ Fehler beim Speichern von {layer_name}: {e}")
