@@ -30,3 +30,4 @@ scipy
 cvxopt
 scikit-learn
 ipykernel
+scikit-dimension
