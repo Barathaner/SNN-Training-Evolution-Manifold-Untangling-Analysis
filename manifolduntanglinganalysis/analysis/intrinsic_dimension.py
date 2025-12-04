@@ -149,22 +149,29 @@ def mle_intrinsic_dimension(dataloader: DataLoader,
     return dim
 
 def twonn_intrinsic_dimension(dataloader: DataLoader,
-                             normalize: bool = True) -> float:
+                             normalize: bool = True,
+                             max_samples: int = 30000) -> float:
     """
     Schätzt die intrinsische Dimension mit Two-NN (Facco et al. 2017).
     
     Oft am robustesten für gekrümmte Manifolds.
-    
     Args:
         dataloader: DataLoader mit den Daten
-        plot_path: Optional, Pfad zum Speichern des Plots
-        project_root: Optional, Projekt-Root-Verzeichnis
+        normalize: Ob Daten normalisiert werden sollen (default: True)
     
     Returns:
         Geschätzte intrinsische Dimension
     """
     X = _collect_data_from_dataloader(dataloader)
-        # Normalisierung (wichtig für numerische Stabilität)
+    
+    # Subsampling für große Datensätze (Two-NN ist O(n²) - sehr langsam!)
+    if max_samples is not None and X.shape[0] > max_samples:
+        print(f"⚠️ Zu viele Samples ({X.shape[0]}), subsample auf {max_samples} für Two-NN")
+        print(f"   (Two-NN ist O(n²) - würde sonst sehr lange dauern)")
+        indices = np.random.choice(X.shape[0], max_samples, replace=False)
+        X = X[indices]
+    
+    # Normalisierung (wichtig für numerische Stabilität)
     if normalize:
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -181,58 +188,4 @@ def twonn_intrinsic_dimension(dataloader: DataLoader,
     print(f"✅ Two-NN geschätzte Dimension: {dim:.2f}")
     return dim
 
-
-def knn_intrinsic_dimension(dataloader: DataLoader,
-                           k: int = 10,
-                           normalize: bool = True) -> float:
-    """
-    Schätzt die intrinsische Dimension mit k-Nearest Neighbors (k-NN).
-    
-    Args:
-        dataloader: DataLoader mit den Daten
-        k: Anzahl der nächsten Nachbarn (default: 10)
-        plot_path: Optional, Pfad zum Speichern des Plots
-        project_root: Optional, Projekt-Root-Verzeichnis
-    
-    Returns:
-        Geschätzte intrinsische Dimension
-    """
-    X = _collect_data_from_dataloader(dataloader)
-    if normalize:
-        from sklearn.preprocessing import StandardScaler
-        scaler = StandardScaler()
-        X = scaler.fit_transform(X)
-    
-    # Prüfe auf identische Datenpunkte
-    unique_rows = np.unique(X, axis=0)
-    if len(unique_rows) < len(X) * 0.95:  # Mehr als 5% Duplikate
-        X = unique_rows
-    estimator = skdim.id.KNN(k=k)
-    estimator.fit(X)
-    dim = estimator.dimension_
-    
-    print(f"✅ k-NN (k={k}) geschätzte Dimension: {dim:.2f}")
-    return dim
-
-
-def danco_intrinsic_dimension(dataloader: DataLoader,
-                              normalize: bool = True)-> float:
-    """
-    Schätzt die intrinsische Dimension mit DanCo.
-    """
-    X = _collect_data_from_dataloader(dataloader)
-    if normalize:
-        from sklearn.preprocessing import StandardScaler
-        scaler = StandardScaler()
-        X = scaler.fit_transform(X)
-    # Prüfe auf identische Datenpunkte
-    unique_rows = np.unique(X, axis=0)
-    if len(unique_rows) < len(X) * 0.95:  # Mehr als 5% Duplikate
-        X = unique_rows
-    estimator = skdim.id.DanCo()
-    estimator.fit(X)
-    dim = estimator.dimension_
-    
-    print(f"✅ DanCo geschätzte Dimension: {dim:.2f}")
-    return dim
 
