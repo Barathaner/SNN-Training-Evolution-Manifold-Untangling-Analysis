@@ -9,6 +9,7 @@ import numpy as np
 import tonic.transforms as transforms
 from sklearn.cluster import DBSCAN
 from sklearn.neighbors import NearestNeighbors
+from scipy.ndimage import gaussian_filter1d
 
 class Downsample1D:
     def __init__(self, spatial_factor=0.1, target_size=None):
@@ -40,6 +41,39 @@ class SqrtTransform:
     def __call__(self, frames):
         frames = frames.astype(np.float32)
         return np.sqrt(frames + self.eps)
+
+
+class GaussianSmoothing:
+    """
+    Wendet Gauß-Filter entlang der Zeitachse auf Frames an (Verschmieren über Time-Bins).
+    
+    Kompatibel mit tonic.transforms - arbeitet auf Frames (nach ToFrame).
+    
+    Args:
+        sigma: Standardabweichung des Gauß-Filters (default: 1.0)
+              sigma=0 bedeutet keine Glättung
+    """
+    def __init__(self, sigma=1.0):
+        self.sigma = sigma
+    
+    def __call__(self, frames):
+        """
+        Args:
+            frames: numpy array mit Shape (n_time_bins, n_neurons, ...) oder (n_time_bins, n_neurons)
+        
+        Returns:
+            frames_smoothed: geglättetes Array mit gleicher Shape
+        """
+        if self.sigma <= 0:
+            return frames  # Keine Glättung wenn sigma <= 0
+        frames = frames[:, 0, :]
+        frames = frames.astype(np.float32)
+        
+        # Wende Gauß-Filter entlang der Zeitachse (axis=0) an
+        # Für jeden Neuron (axis=1) wird die Zeitachse geglättet
+        frames_smoothed = gaussian_filter1d(frames, sigma=self.sigma, axis=0, mode='constant')
+        
+        return frames_smoothed
 
 
 class TimeConvert:
@@ -174,7 +208,7 @@ class DenoiseKNN1D:
 
 
 def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700, 
-                     fixed_duration=958007.0):
+                     fixed_duration=958007.0, gaussian_sigma=1.0):
     """
     Gibt das Standard-Preprocessing für Manifold-Analysen zurück.
     
@@ -184,6 +218,8 @@ def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700,
         original_neurons: Original-Anzahl Neuronen im Datensatz
         fixed_duration: Fixierte Sample-Dauer in μs (Standard: 958007 = 95. Perzentil)
                        Stellt konsistente zeitliche Auflösung sicher
+        gaussian_sigma: Standardabweichung für Gauß-Smoothing (default: 0.0 = keine Glättung)
+                       Empfohlen: 1.0-2.0 für leichte Glättung
     
     Returns:
         tonic.transforms.Compose Objekt
@@ -195,7 +231,8 @@ def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700,
     # Berechne fixe Bin-Größe (time_window)
     time_window = float(fixed_duration) / float(n_time_bins)  # ≈ 11975 μs = 11.975 ms
     
-    return transforms.Compose([
+    # Baue Transform-Pipeline
+    pipeline = [
         # 1. Rauschen auf rohen Events entfernen
         # eps_time in Mikrosekunden: 100.000 μs = 100 ms
         DenoiseDBSCAN1D(eps_time=100000, eps_spatial=5, min_samples=20, use_spatial=True),
@@ -211,15 +248,37 @@ def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700,
         # - Jedes Bin = genau (fixed_duration / n_time_bins) μs
         # - Kürzere Samples: Leere Bins am Ende
         # - Längere Samples (>95%): Events nach fixed_duration werden ignoriert
-         transforms.ToFrame(
+        transforms.ToFrame(
             sensor_size=sensor_size, 
             time_window=time_window,
             start_time=0.0,
             end_time=fixed_duration,
             include_incomplete=True
-        )
-        
-        # 4. Varianz stabilisieren
-        #SqrtTransform()
-    ])
+        ),
+        GaussianSmoothing(sigma=gaussian_sigma)
+    ]
     
+
+    
+    return transforms.Compose(pipeline)
+    
+
+def gaussian_smoothing(vec, sigma=1.0):
+    """
+    Wendet Gauß-Filter entlang der Zeitachse an (Verschmieren über Time-Bins).
+    
+    Args:
+        vec: numpy array mit Shape (n_time_bins, n_neurons)
+        sigma: Standardabweichung des Gauß-Filters (default: 1.0)
+    
+    Returns:
+        vec_smoothed: geglättetes Array mit gleicher Shape
+    """
+    if sigma <= 0:
+        return vec  # Keine Glättung wenn sigma <= 0
+    
+    # Wende Gauß-Filter entlang der Zeitachse (axis=0) an
+    # Für jeden Neuron (axis=1) wird die Zeitachse geglättet
+    vec_smoothed = gaussian_filter1d(vec, sigma=sigma, axis=0, mode='constant')
+    
+    return vec_smoothed

@@ -3,6 +3,7 @@ from tonic.transforms import ToFrame
 from tonic import DiskCachedDataset
 from tonic.collation import PadTensors
 from torch.utils.data import Subset, Dataset, DataLoader
+from typing import Optional
 
 class TransformedDataset(Dataset):
     def __init__(self, dataset, transform):
@@ -25,18 +26,22 @@ def load_filtered_shd_dataloader(
     shuffle=False,
     drop_last=True,
     num_workers=0,
+    num_samples: Optional[int] = None,
 ):
     """
     Lädt einen gefilterten und transformierten SHD-Datensatz als DataLoader.
 
     Args:
         label_range (iterable): Liste oder Range der gewünschten Labels (default: 0–9)
+        data_path (str): Pfad zum Datensatz
         transform (callable): Event → Tensor Transform (default: ToFrame)
         train (bool): Trainings- oder Testset
         batch_size (int): Batchgröße für DataLoader
         shuffle (bool): Zufällige Batchmischung
         drop_last (bool): Letzten Batch verwerfen, wenn zu klein
         num_workers (int): DataLoader Worker
+        num_samples (int, optional): Maximale Anzahl Samples nach dem Filtern. 
+                                    Wenn None, werden alle gefilterten Samples verwendet.
 
     Returns:
         torch.utils.data.DataLoader: Dataloader für das vorbereitete SHD-Dataset
@@ -47,11 +52,20 @@ def load_filtered_shd_dataloader(
     filtered_indices = [
         i for i in range(len(dataset_full)) if dataset_full[i][1] in label_range
     ]
+    
+    # Begrenze auf num_samples, falls angegeben
+    original_count = len(filtered_indices)
+    if num_samples is not None:
+        if num_samples > original_count:
+            print(f"⚠️ Warnung: num_samples ({num_samples}) > gefilterte Samples ({original_count}). Verwende alle {original_count} Samples.")
+        else:
+            filtered_indices = filtered_indices[:num_samples]
+            print(f"📊 Begrenzt auf {num_samples} Samples (von {original_count} gefilterten)")
 
     if transform is None:
         transform = ToFrame(
             sensor_size=tonic.datasets.SHD.sensor_size,  # = (700,)
-            n_time_bins=1000  # Aktualisiert auf 1000
+            n_time_bins=100  # Aktualisiert auf 1000
         )
     subset = Subset(dataset_full, filtered_indices)
     transformed_dataset = TransformedDataset(subset, transform)
