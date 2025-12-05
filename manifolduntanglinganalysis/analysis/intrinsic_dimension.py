@@ -98,7 +98,7 @@ def explained_variance_dimension(dataloader: DataLoader,
     print(f"✅ Intrinsische Dimension: {n_dims} Dimensionen erklären {perc*100:.0f}% der Varianz")
     print(f"✅ Plot gespeichert: {plot_path}")
     
-    return n_dims
+    return n_dims,fig
 
 
 
