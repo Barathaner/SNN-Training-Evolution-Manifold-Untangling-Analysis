@@ -75,9 +75,29 @@ class DimensionReductionVisualizer:
     def add_tsne(self, name: str = "t-SNE", n_components: int = 2, 
                  perplexity: float = 30.0, random_state: int = 42, **kwargs):
         """Fügt t-SNE hinzu."""
+        n_samples = self.X.shape[0]
+        
+        # t-SNE erfordert: perplexity < n_samples
+        # Empfohlen: perplexity sollte zwischen 5 und 50 liegen, aber < n_samples
+        if perplexity >= n_samples:
+            adjusted_perplexity = max(5, min(50, n_samples - 1))
+            print(f"⚠️ Warnung: Perplexity ({perplexity}) >= Anzahl Samples ({n_samples})")
+            print(f"   Automatisch angepasst auf {adjusted_perplexity}")
+            perplexity = adjusted_perplexity
+        elif perplexity > 50:
+            print(f"⚠️ Warnung: Perplexity ({perplexity}) > 50, kann zu schlechteren Ergebnissen führen")
+        
         reducer = TSNE(n_components=n_components, perplexity=perplexity, 
                       random_state=random_state, **kwargs)
         embedding = reducer.fit_transform(self.X)
+        
+        # Prüfe auf NaN oder extreme Werte
+        if np.any(np.isnan(embedding)):
+            print(f"⚠️ Warnung: t-SNE hat NaN-Werte erzeugt (perplexity={perplexity}, n_samples={n_samples})")
+            print(f"   Versuche niedrigere Perplexity oder mehr Samples")
+        elif np.any(np.abs(embedding) > 1e6):
+            print(f"⚠️ Warnung: t-SNE hat extreme Werte erzeugt (perplexity={perplexity})")
+        
         self.reductions[name] = (reducer, embedding)
         return self
     
@@ -122,15 +142,43 @@ class DimensionReductionVisualizer:
         for idx, (name, (_, embedding)) in enumerate(self.reductions.items()):
             ax = axes[idx]
             
+            # Prüfe auf NaN oder extreme Werte
+            valid_mask = ~np.any(np.isnan(embedding), axis=1) & ~np.any(np.isinf(embedding), axis=1)
+            if not np.all(valid_mask):
+                n_invalid = np.sum(~valid_mask)
+                print(f"⚠️ {name}: {n_invalid} ungültige Punkte (NaN/Inf) werden übersprungen")
+                embedding = embedding[valid_mask]
+                if self.labels is not None:
+                    labels_plot = self.labels[valid_mask]
+                else:
+                    labels_plot = None
+            else:
+                labels_plot = self.labels
+            
+            # Prüfe auf extreme Werte (außerhalb eines vernünftigen Bereichs)
+            if embedding.shape[1] == 2:
+                x_range = np.ptp(embedding[:, 0])
+                y_range = np.ptp(embedding[:, 1])
+                if x_range > 1e6 or y_range > 1e6:
+                    print(f"⚠️ {name}: Extreme Werte erkannt (Range: x={x_range:.2e}, y={y_range:.2e})")
+                    # Filtere extreme Werte für bessere Visualisierung
+                    x_valid = np.abs(embedding[:, 0]) < 1e6
+                    y_valid = np.abs(embedding[:, 1]) < 1e6
+                    valid_mask = x_valid & y_valid
+                    if not np.all(valid_mask):
+                        embedding = embedding[valid_mask]
+                        if labels_plot is not None:
+                            labels_plot = labels_plot[valid_mask]
+            
             if embedding.shape[1] == 3:
                 ax = fig.add_subplot(1, n_methods, idx + 1, projection='3d')
-                scatter_kwargs = {'c': self.labels, 'cmap': colormap} if self.labels is not None else {}
+                scatter_kwargs = {'c': labels_plot, 'cmap': colormap} if labels_plot is not None else {}
                 ax.scatter(embedding[:, 0], embedding[:, 1], embedding[:, 2], alpha=0.6, s=20, **scatter_kwargs)
             else:
-                scatter_kwargs = {'c': self.labels, 'cmap': colormap} if self.labels is not None else {}
+                scatter_kwargs = {'c': labels_plot, 'cmap': colormap} if labels_plot is not None else {}
                 scatter = ax.scatter(embedding[:, 0], embedding[:, 1], alpha=0.6, s=20,
                                    edgecolors='k', linewidths=0.5, **scatter_kwargs)
-                if show_legend and self.labels is not None and idx == 0:
+                if show_legend and labels_plot is not None and idx == 0:
                     plt.colorbar(scatter, ax=ax, label='Label')
             
             ax.set_title(name, fontsize=12, fontweight='bold')

@@ -76,6 +76,53 @@ class GaussianSmoothing:
         return frames_smoothed
 
 
+class TrimSilence:
+    """
+    Entfernt Stille am Anfang und Ende von Frames.
+    
+    Kompatibel mit tonic.transforms - arbeitet auf Frames (nach ToFrame).
+    
+    Args:
+        threshold: Aktivitätsschwelle pro Time-Bin (default: 5)
+        padding: Anzahl Time-Bins, die am Anfang/Ende erhalten bleiben (default: 2)
+    """
+    def __init__(self, threshold=5, padding=2):
+        self.threshold = threshold
+        self.padding = padding
+    
+    def __call__(self, frames):
+        """
+        Args:
+            frames: numpy array mit Shape (n_time_bins, 1, n_neurons) oder (n_time_bins, n_neurons)
+        
+        Returns:
+            frames_trimmed: getrimmtes Array mit reduzierter Zeitachse
+        """
+        if len(frames) == 0:
+            return frames
+        
+        if frames.ndim == 3:
+            spikes = frames[:, 0, :]
+        else:
+            spikes = frames
+        
+        activity = np.sum(spikes, axis=1)
+        active_indices = np.where(activity > self.threshold)[0]
+        
+        if len(active_indices) == 0:
+            return frames
+        
+        start_idx = max(0, active_indices[0] - self.padding)
+        end_idx = min(len(spikes), active_indices[-1] + self.padding + 1)
+        
+        trimmed_spikes = spikes[start_idx:end_idx, :]
+        
+        if frames.ndim == 3:
+            return trimmed_spikes[:, np.newaxis, :]
+        else:
+            return trimmed_spikes
+
+
 class TimeConvert:
     """
     Konvertiert Zeiteinheiten (z.B. von Mikrosekunden zu Millisekunden).
@@ -208,7 +255,8 @@ class DenoiseKNN1D:
 
 
 def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700, 
-                     fixed_duration=958007.0, gaussian_sigma=1.0):
+                     fixed_duration=958007.0, gaussian_sigma=1.0, 
+                     trim_silence=False, trim_threshold=5, trim_padding=2):
     """
     Gibt das Standard-Preprocessing für Manifold-Analysen zurück.
     
@@ -220,6 +268,9 @@ def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700,
                        Stellt konsistente zeitliche Auflösung sicher
         gaussian_sigma: Standardabweichung für Gauß-Smoothing (default: 0.0 = keine Glättung)
                        Empfohlen: 1.0-2.0 für leichte Glättung
+        trim_silence: Wenn True, wird Stille am Anfang/Ende entfernt (default: False)
+        trim_threshold: Aktivitätsschwelle für TrimSilence (default: 5)
+        trim_padding: Padding für TrimSilence (default: 2)
     
     Returns:
         tonic.transforms.Compose Objekt
@@ -255,11 +306,9 @@ def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700,
             end_time=fixed_duration,
             include_incomplete=True
         ),
-        GaussianSmoothing(sigma=gaussian_sigma)
+        GaussianSmoothing(sigma=gaussian_sigma),
+        TrimSilence(threshold=trim_threshold, padding=trim_padding)
     ]
-    
-
-    
     return transforms.Compose(pipeline)
     
 
