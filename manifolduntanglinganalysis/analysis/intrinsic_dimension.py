@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from sklearn.decomposition import PCA
 import skdim
 
-from mftma.alldata_dimension_analysis import alldata_dimension_analysis
+from manifolduntanglinganalysis.mftma.alldata_dimension_analysis import alldata_dimension_analysis
 
 
 def _collect_data_from_dataloader(dataloader: DataLoader) -> np.ndarray:

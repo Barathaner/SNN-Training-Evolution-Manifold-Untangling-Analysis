@@ -5,9 +5,13 @@ Einfache Funktion zur Analyse von Manifold-Metriken aus einem DataLoader.
 """
 
 import numpy as np
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Optional
+import os
+import re
+from pathlib import Path
+import matplotlib.pyplot as plt
 
-from mftma.manifold_analysis_correlation import manifold_analysis_corr
+from manifolduntanglinganalysis.mftma.manifold_analysis_correlation import manifold_analysis_corr
 
 
 def analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds(
@@ -66,6 +70,16 @@ def analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds(
                 break
             
             batch_labels_np = batch_labels.numpy() if hasattr(batch_labels, 'numpy') else np.array(batch_labels)
+            
+            # Prüfe ob batch_data Events (Liste) oder Frames (Array/Tensor) ist
+            if isinstance(batch_data, list):
+                # Events als Liste - konvertiere zu numpy Array
+                # Events sind strukturierte Arrays, müssen zu Frames konvertiert werden
+                raise ValueError(
+                    "Dataloader gibt Events zurück, aber Analyse benötigt Frames. "
+                    "Bitte einen Transform an load_activity_log übergeben, der Events zu Frames konvertiert."
+                )
+            
             batch_data_np = batch_data.numpy() if hasattr(batch_data, 'numpy') else np.array(batch_data)
             
             for i, lbl in enumerate(batch_labels_np):
@@ -142,4 +156,164 @@ def analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds(
         print(f"  Optimal K:       {K_all}")
     
     return results
+
+
+def plot_manifold_metrics_over_epochs(
+    results: List[Dict[str, Union[float, np.ndarray]]],
+    activity_logs_path: str,
+    input_data_metrics: Optional[Dict[str, float]] = None,
+    save_dir: Optional[str] = None,
+    figsize_per_subplot: tuple = (5, 4)
+) -> plt.Figure:
+    """
+    Erstellt einen Plot für Manifold-Metriken (Capacity, Radius, Dimension) über Epochen.
+    
+    Der Plot zeigt Layer in Zeilen und Metriken in Spalten. Jeder Subplot zeigt die
+    Entwicklung einer Metrik für einen Layer über die Epochen. Optional können Baseline-Werte
+    aus Input-Daten als gestrichelte Linien angezeigt werden.
+    
+    Args:
+        results: Liste von Ergebnis-Dictionaries (jeweils mit 'capacity', 'radius', 'dimension')
+        activity_logs_path: Pfad zum Verzeichnis mit Activity-Log-Dateien
+        input_data_metrics: Optional, Dictionary mit Baseline-Metriken für Input-Daten.
+                          Format: {'capacity': float, 'radius': float, 'dimension': float}
+                          Wird als gestrichelte rote Linie in jedem Plot angezeigt.
+        save_dir: Optional, Verzeichnis zum Speichern des Plots. Wenn None, wird Plot nicht gespeichert.
+        figsize_per_subplot: Größe pro Subplot (default: (5, 4))
+    
+    Returns:
+        matplotlib.pyplot.Figure: Die erstellte Figure
+    
+    Die Funktion erwartet, dass die Dateinamen im Format sind:
+        epoch_{epoch:03d}_{layer_name}_spk_events.h5
+    """
+    activity_logs_path = Path(activity_logs_path)
+    
+    if not activity_logs_path.exists():
+        raise ValueError(f"Activity logs Pfad existiert nicht: {activity_logs_path}")
+    
+    # Lade alle H5-Dateien
+    h5_files = sorted(activity_logs_path.glob("*.h5"))
+    
+    if len(h5_files) != len(results):
+        raise ValueError(
+            f"Anzahl der H5-Dateien ({len(h5_files)}) stimmt nicht mit Anzahl der Ergebnisse ({len(results)}) überein"
+        )
+    
+    # Parse Dateinamen und gruppiere nach Layer
+    layer_data = {}  # {layer_name: {epoch: {metric: value}}}
+    
+    # Regex-Pattern für Dateinamen: epoch_XXX_layername_spk_events.h5
+    pattern = re.compile(r'epoch_(\d+)_(\w+)_spk_events\.h5')
+    
+    for h5_file, result in zip(h5_files, results):
+        match = pattern.match(h5_file.name)
+        if not match:
+            print(f"⚠️ Warnung: Dateiname passt nicht zum erwarteten Format: {h5_file.name}")
+            continue
+        
+        epoch = int(match.group(1))
+        layer_name = match.group(2)
+        
+        if layer_name not in layer_data:
+            layer_data[layer_name] = {}
+        
+        layer_data[layer_name][epoch] = {
+            'capacity': result['capacity'],
+            'radius': result['radius'],
+            'dimension': result['dimension']
+        }
+    
+    if not layer_data:
+        raise ValueError("Keine gültigen Layer-Daten gefunden. Überprüfe die Dateinamen.")
+    
+    # Sortiere Layer für konsistente Reihenfolge
+    layer_names = sorted(layer_data.keys())
+    n_layers = len(layer_names)
+    
+    # Erstelle ein großes Subplot-Grid: n_layers Zeilen × 3 Spalten
+    fig, axes = plt.subplots(
+        n_layers, 3, 
+        figsize=(figsize_per_subplot[0] * 3, figsize_per_subplot[1] * n_layers)
+    )
+    
+    # Falls nur ein Layer, mache axes zu 2D-Array
+    if n_layers == 1:
+        axes = axes.reshape(1, -1)
+    
+    fig.suptitle('Manifold Metriken über Epochen', fontsize=16, fontweight='bold', y=1.0)
+    
+    # Metriken-Namen und Farben
+    metric_names = ['Capacity (α_M)', 'Radius (R_M)', 'Dimension (D_M)']
+    metric_keys = ['capacity', 'radius', 'dimension']
+    colors = ['blue', 'orange', 'green']
+    markers = ['o', 's', '^']
+    
+    # Plotte für jeden Layer
+    for row_idx, layer_name in enumerate(layer_names):
+        epochs_data = layer_data[layer_name]
+        epochs = sorted(epochs_data.keys())
+        
+        # Extrahiere Metriken für diesen Layer
+        metric_values = {
+            'capacity': [epochs_data[ep]['capacity'] for ep in epochs],
+            'radius': [epochs_data[ep]['radius'] for ep in epochs],
+            'dimension': [epochs_data[ep]['dimension'] for ep in epochs]
+        }
+        
+        # Plotte jede Metrik in einer Spalte
+        for col_idx, (metric_key, metric_name, color, marker) in enumerate(
+            zip(metric_keys, metric_names, colors, markers)
+        ):
+            ax = axes[row_idx, col_idx]
+            
+            # Plot der Layer-Daten
+            ax.plot(
+                epochs, metric_values[metric_key],
+                marker=marker, linestyle='-', linewidth=2,
+                markersize=6, color=color, label=layer_name
+            )
+            
+            # Baseline-Linie (gestrichelt) falls vorhanden
+            if input_data_metrics is not None and metric_key in input_data_metrics:
+                baseline_value = input_data_metrics[metric_key]
+                ax.axhline(
+                    y=baseline_value,
+                    color='red', linestyle='--', linewidth=2,
+                    alpha=0.7, label='Input Data (Baseline)'
+                )
+            
+            # Labels und Titel
+            if row_idx == 0:  # Nur in der ersten Zeile Titel setzen
+                ax.set_title(metric_name, fontsize=12, fontweight='bold')
+            
+            if row_idx == n_layers - 1:  # Nur in der letzten Zeile X-Label
+                ax.set_xlabel('Epoche', fontsize=11)
+            
+            ax.set_ylabel(metric_name, fontsize=11)
+            ax.set_xticks(epochs)
+            ax.grid(True, alpha=0.3)
+            
+            # Layer-Name als Y-Label auf der linken Seite
+            if col_idx == 0:
+                ax.text(-0.15, 0.5, layer_name, transform=ax.transAxes,
+                       fontsize=12, fontweight='bold', rotation=90,
+                       ha='center', va='center')
+            
+            # Legende nur im ersten Subplot
+            if row_idx == 0 and col_idx == 0:
+                ax.legend(loc='upper left', fontsize=9)
+    
+    plt.tight_layout()
+    
+    # Speichere Plot falls gewünscht
+    if save_dir is not None:
+        save_path = Path(save_dir)
+        save_path.mkdir(parents=True, exist_ok=True)
+        filename = "manifold_metrics_all_layers.png"
+        filepath = save_path / filename
+        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        print(f"✅ Plot gespeichert: {filepath}")
+    
+    return fig
 

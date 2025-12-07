@@ -6,9 +6,13 @@ from manifolduntanglinganalysis.training import Trainer
 import models.sffnn_batched as sffnn_batched
 from manifolduntanglinganalysis.ActivityMonitor import ActivityMonitor
 from manifolduntanglinganalysis.preprocessing.metadata_extractor import SHDMetadataExtractor
+import manifolduntanglinganalysis.analysis.intrinsic_dimension as id_analysis
+from manifolduntanglinganalysis.metrics.mean_field_theoretic_manifold_analysis_wrapper import analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds, plot_manifold_metrics_over_epochs
 import numpy as np
 import random
 import torch
+import h5py
+from tonic.transforms import ToFrame
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Seed für Reproduzierbarkeit
 torch.manual_seed(42)
@@ -28,22 +32,126 @@ if __name__ == "__main__":
         fixed_duration=958007.0
     )
 
+
     # Data loading
-    train_dataloader = dataloader.load_filtered_shd_dataloader(
+    test_dataloader = dataloader.load_filtered_shd_dataloader(
         label_range=range(0, 10),
         data_path=data_path,
         transform=transform, 
-        train=True, 
-        batch_size=64
+        train=False, 
+        batch_size=64,
+        num_samples=512
     )
+
+    # results_input = analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds(
+    #     dataloader=test_dataloader,
+    #     labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    #     max_samples_per_class=100,
+    #     kappa=0.0,
+    #     n_t=200,
+    #     n_reps=1,
+    #     verbose=True
+    # )
+    results_input = {
+        'capacity': 0.0069,
+        'radius': 1.8510,
+        'dimension': 187.0195,
+        # Ich füge die anderen Werte aus deinem Text auch hinzu, falls du sie brauchst:
+        'correlation': 0.5949,
+        'optimal_k': 2
+    }
+    print(f"Capacity: {results_input['capacity']:.4f}")
+    print(f"Radius: {results_input['radius']:.4f}")
+    print(f"Dimension: {results_input['dimension']:.4f}")
+    #construct path of all activity logs
+    activity_logs_path = os.path.join(project_root, "data", "activity_logs")
+    activity_logs = os.listdir(activity_logs_path)
+    
+    # Sortiere Activity Logs nach Epoche und Layer
+    # Format: epoch_XXX_layername_spk_events.h5
+    def sort_key(filename):
+        import re
+        match = re.match(r'epoch_(\d+)_(\w+)_spk_events\.h5', filename)
+        if match:
+            epoch = int(match.group(1))
+            layer = match.group(2)
+            # Sortiere zuerst nach Epoche, dann nach Layer
+            return (epoch, layer)
+        return (999, 'zzz')  # Unbekannte Dateien ans Ende
+    
+    activity_logs = sorted(activity_logs, key=sort_key)
+    
+    results = []
+    pca_intdims = []
+    
+    for activity_log in activity_logs:
+        # Lade Activity Log und erstelle Transform mit korrekter sensor_size
+        activity_log_path = os.path.join(activity_logs_path, activity_log)
+        
+        # Lese num_features aus H5-Datei für sensor_size
+        with h5py.File(activity_log_path, 'r') as f:
+            if 'num_features' in f.attrs:
+                num_neurons = int(f.attrs['num_features'])
+            else:
+                # Fallback: Versuche aus Events zu bestimmen
+                if 'events' in f and len(f['events']) > 0:
+                    first_sample_key = sorted(f['events'].keys())[0]
+                    events = f['events'][first_sample_key][:]
+                    num_neurons = int(events['x'].max() + 1) if len(events) > 0 else 128
+                else:
+                    num_neurons = 128  # Standard-Fallback
+        
+        # Erstelle Transform mit korrekter sensor_size (Format: (neurons, height, width))
+        activity_log_transform = ToFrame(
+            sensor_size=(num_neurons, 1, 1),
+            n_time_bins=80,
+            include_incomplete=True
+        )
+        
+        # Lade Activity Log mit Transform
+        activity_log_dataloader = dataloader.load_activity_log(
+            activity_log_path=activity_log_path, 
+            transform=activity_log_transform
+        )
+        print(f"Analyzing activity log: {activity_log}")
+        current_result = analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds(
+            dataloader=activity_log_dataloader,
+            labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+            max_samples_per_class=100,
+            kappa=0.0,
+            n_t=200,
+            n_reps=1,
+            verbose=True
+        )
+
+        # 2. Auf die temporäre Variable zugreifen für den Print
+        print(f"Capacity: {current_result['capacity']:.4f}")
+        print(f"Radius: {current_result['radius']:.4f}")
+        print(f"Dimension: {current_result['dimension']:.4f}")
+
+        # 3. Das Ergebnis zur Liste hinzufügen
+        results.append(current_result)
+    plot_manifold_metrics_over_epochs(results, activity_logs_path, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+
+
+    # Data loading
+    # train_dataloader = dataloader.load_filtered_shd_dataloader(
+    #     label_range=range(0, 10),
+    #     data_path=data_path,
+    #     transform=transform, 
+    #     train=True, 
+    #     batch_size=64
+    # )
 
     test_dataloader = dataloader.load_filtered_shd_dataloader(
         label_range=range(0, 10), 
         data_path=data_path,
         transform=transform, 
-        train=False, 
+        train=False,
+        num_samples=128,
         batch_size=64
     )
+
 
     # Model loading
     net = sffnn_batched.Net(
@@ -116,6 +224,7 @@ if __name__ == "__main__":
     torch.save(net.state_dict(), os.path.join(model_export_path, "model_weights.pth"))
     print(f"\n✅ Model weights saved: {os.path.join(model_export_path, 'model_weights.pth')}")  
 
+    
 
 
     ## Qualitative Analysis of Manifold Visualization of UMAP,PCA, tSNE,Isomap,MDS, SpectralEmbedding, LocallyLinearEmbedding

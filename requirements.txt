@@ -28,6 +28,6 @@ numpy
 pymanopt
 scipy
 cvxopt
-scikit-learn
-ipykernel
 scikit-dimension
+ripser
+persim
