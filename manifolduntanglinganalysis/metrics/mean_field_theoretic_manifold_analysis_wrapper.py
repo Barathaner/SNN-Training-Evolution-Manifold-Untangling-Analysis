@@ -70,16 +70,6 @@ def analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds(
                 break
             
             batch_labels_np = batch_labels.numpy() if hasattr(batch_labels, 'numpy') else np.array(batch_labels)
-            
-            # Prüfe ob batch_data Events (Liste) oder Frames (Array/Tensor) ist
-            if isinstance(batch_data, list):
-                # Events als Liste - konvertiere zu numpy Array
-                # Events sind strukturierte Arrays, müssen zu Frames konvertiert werden
-                raise ValueError(
-                    "Dataloader gibt Events zurück, aber Analyse benötigt Frames. "
-                    "Bitte einen Transform an load_activity_log übergeben, der Events zu Frames konvertiert."
-                )
-            
             batch_data_np = batch_data.numpy() if hasattr(batch_data, 'numpy') else np.array(batch_data)
             
             for i, lbl in enumerate(batch_labels_np):

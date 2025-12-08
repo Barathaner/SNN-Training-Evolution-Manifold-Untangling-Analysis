@@ -19,19 +19,67 @@ class TransformedDataset(Dataset):
 
     def __getitem__(self, idx):
         events, label = self.dataset[idx]
-        return self.transform(events), label
-
-
-def collate_events(batch):
-    """
-    Collate-Funktion für Events (strukturierte numpy Arrays).
-    Gibt Events als Liste zurück und Labels als Tensor.
-    Wird verwendet, wenn kein Transform angewendet wird.
-    """
-    events_list = [item[0] for item in batch]
-    labels = [item[1] for item in batch]
-    labels_tensor = torch.tensor(labels, dtype=torch.long)
-    return events_list, labels_tensor
+        # Prüfe ob Events strukturiertes Array sind (rohe Events)
+        if isinstance(events, np.ndarray) and events.dtype.names is not None:
+            # Spezialbehandlung für leere Events: Compose bricht bei leeren Events ab,
+            # bevor ToFrame aufgerufen wird. Daher müssen wir leere Events manuell zu Frames konvertieren.
+            if len(events) == 0:
+                # Extrahiere ToFrame-Parameter aus dem Transform
+                to_frame_params = self._extract_to_frame_params()
+                if to_frame_params:
+                    # Berechne n_time_bins aus end_time und time_window
+                    end_time = to_frame_params.get('end_time')
+                    time_window = to_frame_params.get('time_window')
+                    if end_time is not None and time_window is not None and time_window > 0:
+                        n_time_bins = int(end_time / time_window)
+                    else:
+                        n_time_bins = 80  # Fallback
+                    
+                    sensor_size = to_frame_params.get('sensor_size', (128, 1, 1))
+                    # ToFrame gibt Frames im Format (n_time_bins, polarity, height, width) zurück
+                    # Bei time_window + end_time: n_time_bins = end_time / time_window
+                    # Format: (n_time_bins, polarity, height, width) = (n_time_bins, 1, 1, num_neurons)
+                    empty_frames = np.zeros((n_time_bins, sensor_size[2], sensor_size[0], sensor_size[1]), dtype=np.float32)
+                    
+                    # Wende restliche Transforms an (z.B. GaussianSmoothing), aber überspringe ToFrame
+                    if hasattr(self.transform, 'transforms') and len(self.transform.transforms) > 1:
+                        # Überspringe ToFrame (erste Transform) und wende restliche an
+                        for t in self.transform.transforms[1:]:
+                            empty_frames = t(empty_frames)
+                    return empty_frames, label
+                else:
+                    # Fallback: Versuche Transform trotzdem anzuwenden
+                    transformed = self.transform(events)
+            else:
+                # Events sind nicht leer - normaler Transform
+                transformed = self.transform(events)
+            
+            # Prüfe ob Transform Frames zurückgibt (numpy array ohne strukturierten dtype)
+            if isinstance(transformed, np.ndarray) and transformed.dtype.names is not None:
+                # Strukturiertes Array (Events) - Transform hat nicht funktioniert!
+                raise TypeError(f"Transform hat Events statt Frames zurückgegeben! "
+                              f"Typ: {type(transformed)}, dtype: {transformed.dtype}, "
+                              f"Shape: {transformed.shape if hasattr(transformed, 'shape') else 'N/A'}")
+            return transformed, label
+        else:
+            # Events sind bereits Frames oder etwas anderes
+            return self.transform(events), label
+    
+    def _extract_to_frame_params(self):
+        """Extrahiert ToFrame-Parameter aus dem Transform für leere Events."""
+        if not hasattr(self.transform, 'transforms'):
+            return None
+        
+        for t in self.transform.transforms:
+            if hasattr(t, 'sensor_size') and hasattr(t, 'time_window'):
+                params = {
+                    'sensor_size': t.sensor_size,
+                    'time_window': t.time_window,
+                    'start_time': getattr(t, 'start_time', 0.0),
+                    'end_time': getattr(t, 'end_time', None),
+                }
+                return params
+        return None
 
 def load_filtered_shd_dataloader(
     label_range=range(0, 10),
@@ -154,11 +202,9 @@ class H5Dataset(Dataset):
         return events, label
 
 def load_activity_log(
-    label_range=range(0, 10),
     activity_log_path="./data/activity_logs",
     transform=None,
     batch_size=64,
-    shuffle=False,
     drop_last=True,
     num_workers=0,
     num_samples: Optional[int] = None,
@@ -188,10 +234,7 @@ def load_activity_log(
     dataset_full = H5Dataset(activity_log_path)
     
     # Filtere nach Labels
-    label_range = set(label_range)
-    filtered_indices = [
-        i for i in range(len(dataset_full)) if dataset_full[i][1] in label_range
-    ]
+
     
     # Begrenze auf num_samples, falls angegeben
     if num_samples is not None:
@@ -203,31 +246,20 @@ def load_activity_log(
             filtered_indices = filtered_indices[:num_samples]
             print(f"📊 Begrenzt auf {num_samples} Samples (von {original_count} gefilterten)")
     
-    subset = Subset(dataset_full, filtered_indices)
     
     # Wende Transform nur an, wenn explizit übergeben
     if transform is not None:
-        dataset = TransformedDataset(subset, transform)
-        # Cache nur wenn Transform vorhanden
-        cache_suffix = f"n_time_bins_{transform.n_time_bins if hasattr(transform, 'n_time_bins') else 'default'}"
-        dataset = DiskCachedDataset(dataset, cache_path=f'./cache/shd/{cache_suffix}')
-    else:
-        dataset = subset
-    
-    # Wähle passende collate_fn
-    if transform is not None:
-        # Mit Transform: Frames können mit PadTensors collated werden
-        collate_fn = PadTensors()
-    else:
-        # Ohne Transform: Events müssen speziell collated werden
-        collate_fn = collate_events
+        dataset = TransformedDataset(dataset_full, transform)
+        # KEIN Cache für Activity Logs - verursacht Probleme mit Events vs Frames
+        # Der Cache kann alte Events statt transformierte Frames enthalten
+        # dataset = DiskCachedDataset(dataset, cache_path=cache_path)
+
     
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
-        shuffle=shuffle,
         drop_last=drop_last,
-        collate_fn=collate_fn,
+        collate_fn=PadTensors(),
         num_workers=num_workers,
     )
 

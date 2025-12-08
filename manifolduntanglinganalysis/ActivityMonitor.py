@@ -544,8 +544,11 @@ class ActivityMonitor:
             if samples_collected >= num_samples:
                 break
             
+            # Speichere die ursprüngliche Batch-Größe
+            original_batch_size = len(events)
+            
             # Berechne, wie viele Samples aus diesem Batch wir nehmen
-            samples_in_batch = min(batch_size, num_samples - samples_collected)
+            samples_in_batch = min(original_batch_size, num_samples - samples_collected)
             
             # Events vorbereiten
             events = events.to(device).float()
@@ -558,18 +561,21 @@ class ActivityMonitor:
             
             labels = labels.to(device)
             
-            # Nimm nur die benötigten Samples aus dem Batch
-            events = events[:samples_in_batch]
-            labels = labels[:samples_in_batch]
+            # Nimm nur die benötigten Samples aus dem Batch (nur wenn wir weniger brauchen als vorhanden)
+            if samples_in_batch < original_batch_size:
+                events = events[:samples_in_batch]
+                labels = labels[:samples_in_batch]
             
             # Metadaten extrahieren (nur wenn Extractor vorhanden)
             batch_metadata_dict = {}
             if extractor is not None:
                 try:
                     batch_metadata = extractor.extract(dataloader, batch_idx)
-                    # Nimm nur die benötigten Samples aus den Metadaten
-                    for key in batch_metadata:
-                        batch_metadata[key] = batch_metadata[key][:samples_in_batch]
+                    # Nimm nur die benötigten Samples aus den Metadaten (nur wenn wir weniger brauchen als vorhanden)
+                    if samples_in_batch < original_batch_size:
+                        for key in batch_metadata:
+                            if hasattr(batch_metadata[key], '__len__'):
+                                batch_metadata[key] = batch_metadata[key][:samples_in_batch]
                     batch_metadata_dict = batch_metadata
                 except Exception as e:
                     if verbose:

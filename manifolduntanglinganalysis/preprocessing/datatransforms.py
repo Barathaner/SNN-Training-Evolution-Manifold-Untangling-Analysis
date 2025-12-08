@@ -43,6 +43,59 @@ class SqrtTransform:
         return np.sqrt(frames + self.eps)
 
 
+class NormalizeFrameShape:
+    """
+    Normalisiert die Shape von Frames auf eine feste Anzahl von Neuronen.
+    Paddet oder schneidet die Frames, um sicherzustellen, dass alle Samples die gleiche Shape haben.
+    
+    Args:
+        num_neurons: Erwartete Anzahl von Neuronen (wird gepaddet/geschnitten auf diese Größe)
+    """
+    def __init__(self, num_neurons: int):
+        self.num_neurons = num_neurons
+    
+    def __call__(self, frames):
+        """
+        Args:
+            frames: numpy array mit Shape (n_time_bins, ...)
+        
+        Returns:
+            frames_normalized: Array mit Shape (n_time_bins, num_neurons)
+        """
+        # Normalisiere zu 2D: (n_time_bins, n_neurons)
+        if frames.ndim == 4:
+            # (n_time_bins, polarity, height, width) -> (n_time_bins, width)
+            frames = frames[:, 0, 0, :]
+        elif frames.ndim == 3:
+            # (n_time_bins, height, width) oder (n_time_bins, 1, n_neurons)
+            if frames.shape[1] == 1:
+                frames = frames[:, 0, :]
+            elif frames.shape[2] == 1:
+                frames = frames[:, :, 0]
+            else:
+                frames = frames.reshape(frames.shape[0], -1)
+        elif frames.ndim == 2:
+            # Bereits (n_time_bins, n_neurons)
+            pass
+        else:
+            raise ValueError(f"Unerwartete Frame-Shape: {frames.shape}")
+        
+        frames = frames.astype(np.float32)
+        n_time_bins = frames.shape[0]
+        current_neurons = frames.shape[1]
+        
+        # Padde oder schneide auf die erwartete Anzahl von Neuronen
+        if current_neurons < self.num_neurons:
+            # Padde mit Nullen
+            padding = np.zeros((n_time_bins, self.num_neurons - current_neurons), dtype=np.float32)
+            frames = np.concatenate([frames, padding], axis=1)
+        elif current_neurons > self.num_neurons:
+            # Schneide ab
+            frames = frames[:, :self.num_neurons]
+        
+        return frames
+
+
 class GaussianSmoothing:
     """
     Wendet Gauß-Filter entlang der Zeitachse auf Frames an (Verschmieren über Time-Bins).
@@ -59,19 +112,61 @@ class GaussianSmoothing:
     def __call__(self, frames):
         """
         Args:
-            frames: numpy array mit Shape (n_time_bins, n_neurons, ...) oder (n_time_bins, n_neurons)
+            frames: numpy array mit Shape (n_time_bins, polarity, height, width) oder (n_time_bins, n_neurons)
+                   Typischerweise von ToFrame: (n_time_bins, 1, 1, n_neurons) oder (n_time_bins, 1, n_neurons)
         
         Returns:
-            frames_smoothed: geglättetes Array mit gleicher Shape
+            frames_smoothed: geglättetes Array mit Shape (n_time_bins, n_neurons)
         """
         if self.sigma <= 0:
-            return frames  # Keine Glättung wenn sigma <= 0
-        frames = frames[:, 0, :]
+            # Auch ohne Glättung normalisieren wir die Shape
+            if frames.ndim == 4:
+                # (n_time_bins, polarity, height, width) -> (n_time_bins, width)
+                frames = frames[:, 0, 0, :]
+            elif frames.ndim == 3:
+                # (n_time_bins, height, width) oder (n_time_bins, 1, n_neurons) -> (n_time_bins, n_neurons)
+                if frames.shape[1] == 1:
+                    frames = frames[:, 0, :]
+                else:
+                    frames = frames[:, :, 0] if frames.shape[2] == 1 else frames[:, :, :]
+            elif frames.ndim == 2:
+                # Bereits (n_time_bins, n_neurons)
+                pass
+            else:
+                raise ValueError(f"Unerwartete Frame-Shape: {frames.shape}")
+            return frames.astype(np.float32)
+        
+        # Normalisiere die Shape zu (n_time_bins, n_neurons)
+        original_shape = frames.shape
+        if frames.ndim == 4:
+            # (n_time_bins, polarity, height, width) -> (n_time_bins, width)
+            frames = frames[:, 0, 0, :]
+        elif frames.ndim == 3:
+            # (n_time_bins, height, width) oder (n_time_bins, 1, n_neurons) -> (n_time_bins, n_neurons)
+            if frames.shape[1] == 1:
+                # (n_time_bins, 1, n_neurons) -> (n_time_bins, n_neurons)
+                frames = frames[:, 0, :]
+            elif frames.shape[2] == 1:
+                # (n_time_bins, n_neurons, 1) -> (n_time_bins, n_neurons)
+                frames = frames[:, :, 0]
+            else:
+                # (n_time_bins, height, width) - nehme die letzte Dimension
+                frames = frames.reshape(frames.shape[0], -1)
+        elif frames.ndim == 2:
+            # Bereits (n_time_bins, n_neurons)
+            pass
+        else:
+            raise ValueError(f"Unerwartete Frame-Shape: {frames.shape}")
+        
         frames = frames.astype(np.float32)
         
         # Wende Gauß-Filter entlang der Zeitachse (axis=0) an
         # Für jeden Neuron (axis=1) wird die Zeitachse geglättet
         frames_smoothed = gaussian_filter1d(frames, sigma=self.sigma, axis=0, mode='constant')
+        
+        # Stelle sicher, dass die Ausgabe immer Shape (n_time_bins, n_neurons) hat
+        if frames_smoothed.ndim != 2:
+            frames_smoothed = frames_smoothed.reshape(frames_smoothed.shape[0], -1)
         
         return frames_smoothed
 
@@ -254,9 +349,62 @@ class DenoiseKNN1D:
             return events[keep_mask]
 
 
-def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700, 
-                     fixed_duration=958007.0, gaussian_sigma=1.0, 
-                     trim_silence=False, trim_threshold=5, trim_padding=2):
+def get_activity_logpreprocessing(num_neurons, n_time_bins=80, 
+                     fixed_duration=None, gaussian_sigma=1.0, ):
+    """
+    Gibt das Standard-Preprocessing für Activity-Log-Daten zurück.
+    
+    Args:
+        num_neurons: Anzahl der Neuronen/Features (sollte aus H5-Datei gelesen werden)
+        n_time_bins: Anzahl der Zeitbins (Standard: 80) - entspricht der Anzahl der Zeitschritte im Netzwerk
+        fixed_duration: Fixierte Sample-Dauer in μs (Standard: None = n_time_bins)
+                       Für Activity Logs sind Events in diskreten Zeitschritten (0 bis n_time_bins-1),
+                       daher sollte fixed_duration = n_time_bins sein (jeder Zeitschritt = 1 Bin)
+        gaussian_sigma: Standardabweichung für Gauß-Smoothing (default: 1.0)
+                       Empfohlen: 1.0-2.0 für leichte Glättung
+        trim_silence: Wenn True, wird Stille am Anfang/Ende entfernt (default: False)
+        trim_threshold: Aktivitätsschwelle für TrimSilence (default: 5)
+        trim_padding: Padding für TrimSilence (default: 2)
+    
+    Returns:
+        tonic.transforms.Compose Objekt
+    """
+    # Für Activity Logs: Events sind in diskreten Zeitschritten (0 bis n_time_bins-1)
+    # fixed_duration sollte daher n_time_bins sein, damit jeder Zeitschritt genau 1 Bin entspricht
+    if fixed_duration is None:
+        fixed_duration = float(n_time_bins)
+    
+    # Berechne fixe Bin-Größe (time_window)
+    # Da Events diskrete Zeitschritte sind, sollte time_window = 1.0 sein
+    time_window = float(fixed_duration) / float(n_time_bins)  # = 1.0 wenn fixed_duration = n_time_bins
+    
+    # Sensor-Größe im Format (neurons, height, width)
+    sensor_size = (num_neurons, 1, 1)
+    
+    # Baue Transform-Pipeline
+    pipeline = [
+        # Zu Frames umwandeln mit fixer zeitlicher Auflösung
+        # Für Activity Logs: Events haben diskrete Zeitschritte (0 bis n_time_bins-1)
+        # time_window = 1.0 bedeutet: Jeder Zeitschritt entspricht genau 1 Bin
+        transforms.ToFrame(
+            sensor_size=sensor_size,
+            time_window=time_window,  # = 1.0 für diskrete Zeitschritte
+            start_time=0.0,
+            end_time=fixed_duration,  # = n_time_bins (z.B. 80)
+            include_incomplete=True
+        ),
+        # Normalisiere Frame-Shape auf feste Anzahl von Neuronen
+        # (wichtig: ToFrame kann unterschiedliche Neuronenzahlen erzeugen)
+        NormalizeFrameShape(num_neurons=num_neurons),
+        GaussianSmoothing(sigma=gaussian_sigma)
+    ]
+    
+    # TrimSilence nur hinzufügen, wenn explizit gewünscht
+    
+    return transforms.Compose(pipeline)
+    
+def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700,include_trim_silence=False,
+                     fixed_duration=958007.0, gaussian_sigma=1.0,  trim_threshold=5, trim_padding=2):
     """
     Gibt das Standard-Preprocessing für Manifold-Analysen zurück.
     
@@ -306,9 +454,10 @@ def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700,
             end_time=fixed_duration,
             include_incomplete=True
         ),
-        GaussianSmoothing(sigma=gaussian_sigma),
-        TrimSilence(threshold=trim_threshold, padding=trim_padding)
+        GaussianSmoothing(sigma=gaussian_sigma)
     ]
+    if include_trim_silence:
+        pipeline.append(TrimSilence(threshold=trim_threshold, padding=trim_padding))
     return transforms.Compose(pipeline)
     
 
