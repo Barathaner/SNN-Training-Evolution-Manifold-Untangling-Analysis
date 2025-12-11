@@ -2,12 +2,10 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional
 from torch.utils.data import DataLoader
 from sklearn.decomposition import PCA
 import skdim
-
-from manifolduntanglinganalysis.mftma.alldata_dimension_analysis import alldata_dimension_analysis
 
 
 def _collect_data_from_dataloader(dataloader: DataLoader) -> np.ndarray:
@@ -189,47 +187,5 @@ def twonn_intrinsic_dimension(dataloader: DataLoader,
     
     print(f"✅ Two-NN geschätzte Dimension: {dim:.2f}")
     return dim
-
-
-def participation_ratio_mftma_dimension_analysis(dataloader: DataLoader,
-                                   perc: float = 0.90) -> Tuple[float, int, int]:
-    """
-    Berechnet die Gesamtdimension der Daten mit zwei verschiedenen Methoden:
-    1. Participation Ratio: Misst, wie gleichmäßig die Varianz über alle Dimensionen verteilt ist
-    2. Explained Variance: Anzahl der Dimensionen, die benötigt werden, um perc% der Varianz zu erklären
-    3. Feature Dimension: Gesamtzahl der Features/Neuronen
-    
-    Args:
-        dataloader: DataLoader mit den Daten
-        perc: Prozentsatz der Varianz, der erklärt werden soll (default: 0.90)
-    
-    Returns:
-        Tuple mit:
-            - D_participation_ratio: Participation Ratio (effektive Dimension basierend auf Varianzverteilung)
-            - D_explained_variance: Anzahl Dimensionen für perc% Varianz
-            - D_feature: Gesamtzahl der Features/Neuronen
-    
-    Interpretation:
-        - D_participation_ratio: Hoher Wert = Varianz gleichmäßig verteilt, niedriger Wert = Varianz konzentriert
-        - D_explained_variance: Direktes Maß für "Wie viele Dimensionen brauche ich für X% der Information?"
-        - D_feature: Gesamtzahl der verfügbaren Dimensionen
-    """
-    X = _collect_data_from_dataloader(dataloader)
-    
-    # alldata_dimension_analysis erwartet Arrays der Form (N, P) wo N=Features, P=Samples
-    # X hat Form (N_samples, Features), also transponieren wir
-    X_transposed = X.T  # Shape: (Features, N_samples)
-    
-    # Funktion erwartet Liste von Arrays (pro Klasse), hier haben wir alle Daten zusammen
-    D_participation_ratio, D_explained_variance, D_feature = alldata_dimension_analysis(
-        [X_transposed], perc=perc
-    )
-    
-    print(f"✅ Total Data Dimension Analysis:")
-    print(f"   Participation Ratio (D_participation): {D_participation_ratio:.2f}")
-    print(f"   Explained Variance Dimension ({perc*100:.0f}%): {D_explained_variance}")
-    print(f"   Feature Dimension: {D_feature}")
-    
-    return D_participation_ratio, D_explained_variance, D_feature
 
 

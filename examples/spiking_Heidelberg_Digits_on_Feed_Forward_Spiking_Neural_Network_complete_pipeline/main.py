@@ -6,12 +6,12 @@ from manifolduntanglinganalysis.training import Trainer
 import models.sffnn_batched as sffnn_batched
 from manifolduntanglinganalysis.ActivityMonitor import ActivityMonitor
 from manifolduntanglinganalysis.preprocessing.metadata_extractor import SHDMetadataExtractor
-import manifolduntanglinganalysis.analysis.intrinsic_dimension as id_analysis
-from manifolduntanglinganalysis.metrics.mean_field_theoretic_manifold_analysis_wrapper import analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds, plot_manifold_metrics_over_epochs
+from manifolduntanglinganalysis.metrics.mean_field_theoretic_manifold_analysis_wrapper import analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds, plot_manifold_metrics_over_epochs, analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds_rate_coded, plot_manifold_metrics_over_layer, plot_manifold_metrics_over_epochs_all_layer_in_one_plot
 import numpy as np
 import random
 import torch
 import h5py
+import re
 from tonic.transforms import ToFrame
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Seed für Reproduzierbarkeit
@@ -22,7 +22,6 @@ torch.cuda.manual_seed_all(42)
 # Sortiere Activity Logs nach Epoche und Layer
 # Format: epoch_XXX_layername_spk_events.h5
 def sort_key(filename):
-    import re
     match = re.match(r'epoch_(\d+)_(\w+)_spk_events\.h5', filename)
     if match:
         epoch = int(match.group(1))
@@ -43,22 +42,21 @@ if __name__ == "__main__":
     )
 
     # Data loading
-    # train_dataloader = dataloader.load_filtered_shd_dataloader(
-    #     label_range=range(0, 10),
-    #     data_path=data_path,
-    #     transform=transform, 
-    #     train=True, 
-    #     batch_size=64
-    # )
+    train_dataloader = dataloader.load_filtered_shd_dataloader(
+        label_range=range(0, 10),
+        data_path=data_path,
+        transform=transform, 
+        train=True, 
+        batch_size=64
+    )
 
-    # test_dataloader = dataloader.load_filtered_shd_dataloader(
-    #     label_range=range(0, 10), 
-    #     data_path=data_path,
-    #     transform=transform, 
-    #     train=False,
-    #     num_samples=512,
-    #     batch_size=64
-    # )
+    test_dataloader = dataloader.load_filtered_shd_dataloader(
+        label_range=range(0, 10), 
+        data_path=data_path,
+        transform=transform, 
+        train=False,
+        batch_size=64
+    )
 
 
     # # Model loading
@@ -81,7 +79,7 @@ if __name__ == "__main__":
     
     # # Konfiguration für Activity Monitoring
     # MONITORING_CONFIG = {
-    #     'num_samples': 512,
+    #     'num_samples': 1000,
     #     'layer_names': ['lif0', 'lif1', 'lif2', 'lif3'],
     #     'save_dir': os.path.join(project_root, "data", "activity_logs")
     # }
@@ -164,10 +162,20 @@ if __name__ == "__main__":
     
     activity_logs = sorted(activity_logs, key=sort_key)
     
-    results = []
+    results = {}  # Struktur: results[epoch][layer] = {'capacity': ..., 'radius': ..., 'dimension': ...}
+    results_list = []  # Für plot_manifold_metrics_over_epochs
     pca_intdims = []
-    
+    output_paths = [x for x in activity_logs if "lif3" in x]
     for activity_log in activity_logs:
+        # Parse Epoch und Layer aus dem Dateinamen
+        match = re.match(r'epoch_(\d+)_(\w+)_spk_events\.h5', activity_log)
+        if not match:
+            print(f"Warnung: Konnte Epoch und Layer nicht aus {activity_log} extrahieren")
+            continue
+        
+        epoch = int(match.group(1))
+        layer = match.group(2)
+        
         # Lade Activity Log und erstelle Transform mit korrekter sensor_size
         activity_log_path = os.path.join(project_root, "data", "activity_logs", activity_log)
         
@@ -183,6 +191,18 @@ if __name__ == "__main__":
             transform=activity_log_transform
         )
         print(f"Analyzing activity log: {activity_log}")
+        current_result = None
+        # if "lif3" in activity_log:
+        #     current_result = analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds_rate_coded(
+        #         dataloader=activity_log_dataloader,
+        #         labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        #         max_samples_per_class=100,
+        #         kappa=0.0,
+        #         n_t=200,
+        #         n_reps=1,
+        #         verbose=True
+        #     )
+        # else:
         current_result = analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds(
             dataloader=activity_log_dataloader,
             labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -198,9 +218,27 @@ if __name__ == "__main__":
         print(f"Radius: {current_result['radius']:.4f}")
         print(f"Dimension: {current_result['dimension']:.4f}")
 
-        # 3. Das Ergebnis zur Liste hinzufügen
-        results.append(current_result)
-    plot_manifold_metrics_over_epochs(results, activity_logs_path, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
-
-
-    
+        # 3. Strukturiere nach Epoch und Layer
+        if epoch not in results:
+            results[epoch] = {}
+        
+        # Konvertiere NumPy-Datentypen zu nativen Python-Typen
+        results[epoch][layer] = {
+            'capacity': float(current_result['capacity']),
+            'radius': float(current_result['radius']),
+            'dimension': float(current_result['dimension']),
+            'correlation': float(current_result['correlation'])
+        }
+        
+        # Für plot_manifold_metrics_over_epochs die vollständigen Ergebnisse behalten
+        results_list.append(current_result)
+    plot_manifold_metrics_over_epochs(results_list, output_paths, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    plot_manifold_metrics_over_layer(results_list, output_paths, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    plot_manifold_metrics_over_epochs_all_layer_in_one_plot(results_list, output_paths, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    # save the results in a json file
+    import json
+    # Stelle sicher, dass das Verzeichnis existiert
+    results_dir = os.path.join(project_root, "data", "results")
+    os.makedirs(results_dir, exist_ok=True)
+    with open(os.path.join(results_dir, "results.json"), 'w') as f:
+        json.dump(results, f, indent=2)
