@@ -59,76 +59,76 @@ if __name__ == "__main__":
     )
 
 
-    # # Model loading
-    # net = sffnn_batched.Net(
-    #     num_inputs=350,      # Nach Downsample1D(0.5): 700 -> 350
-    #     num_hidden1=128,     # Erstes Hidden Layer
-    #     num_hidden2=64,      # Zweites Hidden Layer (hierarchisch)
-    #     num_outputs=10, 
-    #     num_steps=80,      # 80 Zeitschritte (entspricht n_time_bins)
-    #     beta=0.9
-    # ).to(device)
+    # Model loading
+    net = sffnn_batched.Net(
+        num_inputs=350,      # Nach Downsample1D(0.5): 700 -> 350
+        num_hidden1=128,     # Erstes Hidden Layer
+        num_hidden2=64,      # Zweites Hidden Layer (hierarchisch)
+        num_outputs=10, 
+        num_steps=80,      # 80 Zeitschritte (entspricht n_time_bins)
+        beta=0.9
+    ).to(device)
 
 
-    # # Training Setup
-    # loss_fn = nn.CrossEntropyLoss()
-    # optimizer = torch.optim.Adam(net.parameters(), lr=5e-4)
-    # num_epochs = 10
+    # Training Setup
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(net.parameters(), lr=5e-4)
+    num_epochs = 10
     
-    # trainer = Trainer(net, optimizer, loss_fn, device, project_root=project_root)
+    trainer = Trainer(net, optimizer, loss_fn, device, project_root=project_root)
     
-    # # Konfiguration für Activity Monitoring
-    # MONITORING_CONFIG = {
-    #     'num_samples': 1000,
-    #     'layer_names': ['lif0', 'lif1', 'lif2', 'lif3'],
-    #     'save_dir': os.path.join(project_root, "data", "activity_logs")
-    # }
+    # Konfiguration für Activity Monitoring
+    MONITORING_CONFIG = {
+        'num_samples': 1000,
+        'layer_names': ['lif0', 'lif1', 'lif2', 'lif3'],
+        'save_dir': os.path.join(project_root, "data", "activity_logs")
+    }
     
-    # for epoch in range(1, num_epochs + 1):
-    #     print(f"\n{'='*80}")
-    #     print(f"Epoch {epoch}/{num_epochs}")
-    #     print(f"{'='*80}")
+    for epoch in range(1, num_epochs + 1):
+        print(f"\n{'='*80}")
+        print(f"Epoch {epoch}/{num_epochs}")
+        print(f"{'='*80}")
         
-    #     train_loss, train_acc = trainer.train_epoch(train_dataloader)
-    #     val_metrics = trainer.evaluate(test_dataloader)
+        train_loss, train_acc = trainer.train_epoch(train_dataloader)
+        val_metrics = trainer.evaluate(test_dataloader)
         
-    #     print(f"Train - Loss: {train_loss:.4f}, Accuracy: {train_acc:.4f}")
-    #     print(f"Val   - Loss: {val_metrics['loss']:.4f}, Accuracy: {val_metrics['accuracy']:.4f}, "
-    #           f"F1: {val_metrics['f1']:.4f}, AUC-ROC: {val_metrics['auc_roc']:.4f}")
+        print(f"Train - Loss: {train_loss:.4f}, Accuracy: {train_acc:.4f}")
+        print(f"Val   - Loss: {val_metrics['loss']:.4f}, Accuracy: {val_metrics['accuracy']:.4f}, "
+              f"F1: {val_metrics['f1']:.4f}, AUC-ROC: {val_metrics['auc_roc']:.4f}")
         
-    #     # Activity Monitoring (nur in bestimmten Epochen)
-    #     print(f"\n🧪 Activity Monitoring nach Epoch {epoch}:")
-    #     metadata_extractor = SHDMetadataExtractor()
-    #     input_transform = lambda x: x.squeeze(2) if x.ndim == 4 else x
+        # Activity Monitoring (nur in bestimmten Epochen)
+        print(f"\n🧪 Activity Monitoring nach Epoch {epoch}:")
+        metadata_extractor = SHDMetadataExtractor()
+        input_transform = lambda x: x.squeeze(2) if x.ndim == 4 else x
         
-    #     activity_monitor = ActivityMonitor(
-    #         net,
-    #         metadata_extractor=metadata_extractor,
-    #         input_transform=input_transform
-    #     )
-    #     activity_monitor.enable_monitoring(lif_layer_names=MONITORING_CONFIG['layer_names'])
+        activity_monitor = ActivityMonitor(
+            net,
+            metadata_extractor=metadata_extractor,
+            input_transform=input_transform
+        )
+        activity_monitor.enable_monitoring(lif_layer_names=MONITORING_CONFIG['layer_names'])
         
-    #     activity_monitor.monitor_and_save_samples(
-    #         dataloader=test_dataloader,
-    #         num_samples=MONITORING_CONFIG['num_samples'],
-    #         layer_names=MONITORING_CONFIG['layer_names'],
-    #         save_dir=MONITORING_CONFIG['save_dir'],
-    #         epoch=epoch,
-    #         device=device,
-    #         verbose=True
-    #     )
+        activity_monitor.monitor_and_save_samples(
+            dataloader=test_dataloader,
+            num_samples=MONITORING_CONFIG['num_samples'],
+            layer_names=MONITORING_CONFIG['layer_names'],
+            save_dir=MONITORING_CONFIG['save_dir'],
+            epoch=epoch,
+            device=device,
+            verbose=True
+        )
         
-    #     activity_monitor.disable_monitoring()
+        activity_monitor.disable_monitoring()
     
-    # # Speichere Performance-Plots
-    # plot_path = trainer.save_plots()
-    # print(f"\n✅ Performance-Plots gespeichert: {plot_path}")
+    # Speichere Performance-Plots
+    plot_path = trainer.save_plots()
+    print(f"\n✅ Performance-Plots gespeichert: {plot_path}")
 
-    # # Save the model
-    # model_export_path = os.path.join(project_root, "models", "model_export")
-    # os.makedirs(model_export_path, exist_ok=True)
-    # torch.save(net.state_dict(), os.path.join(model_export_path, "model_weights.pth"))
-    # print(f"\n✅ Model weights saved: {os.path.join(model_export_path, 'model_weights.pth')}")  
+    # Save the model
+    model_export_path = os.path.join(project_root, "models", "model_export")
+    os.makedirs(model_export_path, exist_ok=True)
+    torch.save(net.state_dict(), os.path.join(model_export_path, "model_weights.pth"))
+    print(f"\n✅ Model weights saved: {os.path.join(model_export_path, 'model_weights.pth')}")  
 
     
 
@@ -165,7 +165,6 @@ if __name__ == "__main__":
     results = {}  # Struktur: results[epoch][layer] = {'capacity': ..., 'radius': ..., 'dimension': ...}
     results_list = []  # Für plot_manifold_metrics_over_epochs
     pca_intdims = []
-    output_paths = [x for x in activity_logs if "lif3" in x]
     for activity_log in activity_logs:
         # Parse Epoch und Layer aus dem Dateinamen
         match = re.match(r'epoch_(\d+)_(\w+)_spk_events\.h5', activity_log)
@@ -232,9 +231,21 @@ if __name__ == "__main__":
         
         # Für plot_manifold_metrics_over_epochs die vollständigen Ergebnisse behalten
         results_list.append(current_result)
-    plot_manifold_metrics_over_epochs(results_list, output_paths, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
-    plot_manifold_metrics_over_layer(results_list, output_paths, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
-    plot_manifold_metrics_over_epochs_all_layer_in_one_plot(results_list, output_paths, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    
+    # Erstelle Plots aus den berechneten Ergebnissen
+    results_json_path = os.path.join(project_root, "data", "results", "results_all.json")
+    plot_manifold_metrics_over_epochs(results_json_path=results_json_path, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    #plot_manifold_metrics_over_epochs(results_list, activity_logs, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    plot_manifold_metrics_over_layer(results_json_path=results_json_path, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    #plot_manifold_metrics_over_layer(results_list, activity_logs, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    plot_manifold_metrics_over_epochs_all_layer_in_one_plot(results_json_path=results_json_path, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    #plot_manifold_metrics_over_epochs_all_layer_in_one_plot(results_list, activity_logs, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    
+    # Alternative: Erstelle Plots direkt aus JSON-Datei (kommentiert aus)
+    # results_json_path = os.path.join(project_root, "data", "results", "results_all.json")
+    # plot_manifold_metrics_over_epochs(results_json_path=results_json_path, input_data_metrics=results_input, save_dir=os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    # plot_manifold_metrics_over_layer(results_json_path=results_json_path, input_data_metrics=results_input, save_dir=os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
+    # plot_manifold_metrics_over_epochs_all_layer_in_one_plot(results_json_path=results_json_path, input_data_metrics=results_input, save_dir=os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
     # save the results in a json file
     import json
     # Stelle sicher, dass das Verzeichnis existiert

@@ -1,0 +1,1403 @@
+Capacity: 0.0069
+Radius: 1.8510
+Dimension: 187.0195
+Analyzing activity log: epoch_001_lif0_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 350 Neuronen
+    Klasse 1: 7680 Time-Bins, 350 Neuronen
+    Klasse 2: 7120 Time-Bins, 350 Neuronen
+    Klasse 3: 8000 Time-Bins, 350 Neuronen
+    Klasse 4: 7760 Time-Bins, 350 Neuronen
+    Klasse 5: 7840 Time-Bins, 350 Neuronen
+    Klasse 6: 7280 Time-Bins, 350 Neuronen
+    Klasse 7: 7280 Time-Bins, 350 Neuronen
+    Klasse 8: 7680 Time-Bins, 350 Neuronen
+    Klasse 9: 7280 Time-Bins, 350 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0076
+  Radius (R_M):    1.7678
+  Dimension (D_M): 171.2464
+  Correlation:     0.6318
+  Optimal K:       3
+Capacity: 0.0076
+Radius: 1.7678
+Dimension: 171.2464
+Analyzing activity log: epoch_001_lif1_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 128 Neuronen
+    Klasse 1: 7680 Time-Bins, 128 Neuronen
+    Klasse 2: 7120 Time-Bins, 128 Neuronen
+    Klasse 3: 8000 Time-Bins, 128 Neuronen
+    Klasse 4: 7760 Time-Bins, 128 Neuronen
+    Klasse 5: 7840 Time-Bins, 128 Neuronen
+    Klasse 6: 7280 Time-Bins, 128 Neuronen
+    Klasse 7: 7280 Time-Bins, 128 Neuronen
+    Klasse 8: 7680 Time-Bins, 128 Neuronen
+    Klasse 9: 7280 Time-Bins, 128 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0197
+  Radius (R_M):    3.1742
+  Dimension (D_M): 56.0914
+  Correlation:     0.6591
+  Optimal K:       3
+Capacity: 0.0197
+Radius: 3.1742
+Dimension: 56.0914
+Analyzing activity log: epoch_001_lif2_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 64 Neuronen
+    Klasse 1: 7680 Time-Bins, 64 Neuronen
+    Klasse 2: 7120 Time-Bins, 64 Neuronen
+    Klasse 3: 8000 Time-Bins, 64 Neuronen
+    Klasse 4: 7760 Time-Bins, 64 Neuronen
+    Klasse 5: 7840 Time-Bins, 64 Neuronen
+    Klasse 6: 7280 Time-Bins, 64 Neuronen
+    Klasse 7: 7280 Time-Bins, 64 Neuronen
+    Klasse 8: 7680 Time-Bins, 64 Neuronen
+    Klasse 9: 7280 Time-Bins, 64 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0443
+  Radius (R_M):    12.4701
+  Dimension (D_M): 22.1573
+  Correlation:     0.6895
+  Optimal K:       3
+Capacity: 0.0443
+Radius: 12.4701
+Dimension: 22.1573
+Analyzing activity log: epoch_001_lif3_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 10 Neuronen
+    Klasse 1: 7680 Time-Bins, 10 Neuronen
+    Klasse 2: 7120 Time-Bins, 10 Neuronen
+    Klasse 3: 8000 Time-Bins, 10 Neuronen
+    Klasse 4: 7760 Time-Bins, 10 Neuronen
+    Klasse 5: 7840 Time-Bins, 10 Neuronen
+    Klasse 6: 7280 Time-Bins, 10 Neuronen
+    Klasse 7: 7280 Time-Bins, 10 Neuronen
+    Klasse 8: 7680 Time-Bins, 10 Neuronen
+    Klasse 9: 7280 Time-Bins, 10 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.1561
+  Radius (R_M):    47.4441
+  Dimension (D_M): 5.7961
+  Correlation:     0.4937
+  Optimal K:       3
+Capacity: 0.1561
+Radius: 47.4441
+Dimension: 5.7961
+Analyzing activity log: epoch_002_lif0_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 350 Neuronen
+    Klasse 1: 7680 Time-Bins, 350 Neuronen
+    Klasse 2: 7120 Time-Bins, 350 Neuronen
+    Klasse 3: 8000 Time-Bins, 350 Neuronen
+    Klasse 4: 7760 Time-Bins, 350 Neuronen
+    Klasse 5: 7840 Time-Bins, 350 Neuronen
+    Klasse 6: 7280 Time-Bins, 350 Neuronen
+    Klasse 7: 7280 Time-Bins, 350 Neuronen
+    Klasse 8: 7680 Time-Bins, 350 Neuronen
+    Klasse 9: 7280 Time-Bins, 350 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0098
+  Radius (R_M):    2.0988
+  Dimension (D_M): 146.2870
+  Correlation:     0.5292
+  Optimal K:       3
+Capacity: 0.0098
+Radius: 2.0988
+Dimension: 146.2870
+Analyzing activity log: epoch_002_lif1_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 128 Neuronen
+    Klasse 1: 7680 Time-Bins, 128 Neuronen
+    Klasse 2: 7120 Time-Bins, 128 Neuronen
+    Klasse 3: 8000 Time-Bins, 128 Neuronen
+    Klasse 4: 7760 Time-Bins, 128 Neuronen
+    Klasse 5: 7840 Time-Bins, 128 Neuronen
+    Klasse 6: 7280 Time-Bins, 128 Neuronen
+    Klasse 7: 7280 Time-Bins, 128 Neuronen
+    Klasse 8: 7680 Time-Bins, 128 Neuronen
+    Klasse 9: 7280 Time-Bins, 128 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0267
+  Radius (R_M):    1.4684
+  Dimension (D_M): 53.9601
+  Correlation:     0.5140
+  Optimal K:       3
+Capacity: 0.0267
+Radius: 1.4684
+Dimension: 53.9601
+Analyzing activity log: epoch_002_lif2_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 64 Neuronen
+    Klasse 1: 7680 Time-Bins, 64 Neuronen
+    Klasse 2: 7120 Time-Bins, 64 Neuronen
+    Klasse 3: 8000 Time-Bins, 64 Neuronen
+    Klasse 4: 7760 Time-Bins, 64 Neuronen
+    Klasse 5: 7840 Time-Bins, 64 Neuronen
+    Klasse 6: 7280 Time-Bins, 64 Neuronen
+    Klasse 7: 7280 Time-Bins, 64 Neuronen
+    Klasse 8: 7680 Time-Bins, 64 Neuronen
+    Klasse 9: 7280 Time-Bins, 64 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0376
+  Radius (R_M):    3.0210
+  Dimension (D_M): 29.5801
+  Correlation:     0.5364
+  Optimal K:       3
+Capacity: 0.0376
+Radius: 3.0210
+Dimension: 29.5801
+Analyzing activity log: epoch_002_lif3_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 10 Neuronen
+    Klasse 1: 7680 Time-Bins, 10 Neuronen
+    Klasse 2: 7120 Time-Bins, 10 Neuronen
+    Klasse 3: 8000 Time-Bins, 10 Neuronen
+    Klasse 4: 7760 Time-Bins, 10 Neuronen
+    Klasse 5: 7840 Time-Bins, 10 Neuronen
+    Klasse 6: 7280 Time-Bins, 10 Neuronen
+    Klasse 7: 7280 Time-Bins, 10 Neuronen
+    Klasse 8: 7680 Time-Bins, 10 Neuronen
+    Klasse 9: 7280 Time-Bins, 10 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.1455
+  Radius (R_M):    9.8969
+  Dimension (D_M): 6.5170
+  Correlation:     0.4568
+  Optimal K:       3
+Capacity: 0.1455
+Radius: 9.8969
+Dimension: 6.5170
+Analyzing activity log: epoch_003_lif0_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 350 Neuronen
+    Klasse 1: 7680 Time-Bins, 350 Neuronen
+    Klasse 2: 7120 Time-Bins, 350 Neuronen
+    Klasse 3: 8000 Time-Bins, 350 Neuronen
+    Klasse 4: 7760 Time-Bins, 350 Neuronen
+    Klasse 5: 7840 Time-Bins, 350 Neuronen
+    Klasse 6: 7280 Time-Bins, 350 Neuronen
+    Klasse 7: 7280 Time-Bins, 350 Neuronen
+    Klasse 8: 7680 Time-Bins, 350 Neuronen
+    Klasse 9: 7280 Time-Bins, 350 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0109
+  Radius (R_M):    2.4028
+  Dimension (D_M): 138.0339
+  Correlation:     0.5004
+  Optimal K:       3
+Capacity: 0.0109
+Radius: 2.4028
+Dimension: 138.0339
+Analyzing activity log: epoch_003_lif1_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 128 Neuronen
+    Klasse 1: 7680 Time-Bins, 128 Neuronen
+    Klasse 2: 7120 Time-Bins, 128 Neuronen
+    Klasse 3: 8000 Time-Bins, 128 Neuronen
+    Klasse 4: 7760 Time-Bins, 128 Neuronen
+    Klasse 5: 7840 Time-Bins, 128 Neuronen
+    Klasse 6: 7280 Time-Bins, 128 Neuronen
+    Klasse 7: 7280 Time-Bins, 128 Neuronen
+    Klasse 8: 7680 Time-Bins, 128 Neuronen
+    Klasse 9: 7280 Time-Bins, 128 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0325
+  Radius (R_M):    1.2414
+  Dimension (D_M): 49.4516
+  Correlation:     0.4583
+  Optimal K:       3
+Capacity: 0.0325
+Radius: 1.2414
+Dimension: 49.4516
+Analyzing activity log: epoch_003_lif2_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 64 Neuronen
+    Klasse 1: 7680 Time-Bins, 64 Neuronen
+    Klasse 2: 7120 Time-Bins, 64 Neuronen
+    Klasse 3: 8000 Time-Bins, 64 Neuronen
+    Klasse 4: 7760 Time-Bins, 64 Neuronen
+    Klasse 5: 7840 Time-Bins, 64 Neuronen
+    Klasse 6: 7280 Time-Bins, 64 Neuronen
+    Klasse 7: 7280 Time-Bins, 64 Neuronen
+    Klasse 8: 7680 Time-Bins, 64 Neuronen
+    Klasse 9: 7280 Time-Bins, 64 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0318
+  Radius (R_M):    3.1851
+  Dimension (D_M): 34.8462
+  Correlation:     0.4615
+  Optimal K:       4
+Capacity: 0.0318
+Radius: 3.1851
+Dimension: 34.8462
+Analyzing activity log: epoch_003_lif3_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 10 Neuronen
+    Klasse 1: 7680 Time-Bins, 10 Neuronen
+    Klasse 2: 7120 Time-Bins, 10 Neuronen
+    Klasse 3: 8000 Time-Bins, 10 Neuronen
+    Klasse 4: 7760 Time-Bins, 10 Neuronen
+    Klasse 5: 7840 Time-Bins, 10 Neuronen
+    Klasse 6: 7280 Time-Bins, 10 Neuronen
+    Klasse 7: 7280 Time-Bins, 10 Neuronen
+    Klasse 8: 7680 Time-Bins, 10 Neuronen
+    Klasse 9: 7280 Time-Bins, 10 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.1437
+  Radius (R_M):    5.9342
+  Dimension (D_M): 6.9155
+  Correlation:     0.4079
+  Optimal K:       2
+Capacity: 0.1437
+Radius: 5.9342
+Dimension: 6.9155
+Analyzing activity log: epoch_004_lif0_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 350 Neuronen
+    Klasse 1: 7680 Time-Bins, 350 Neuronen
+    Klasse 2: 7120 Time-Bins, 350 Neuronen
+    Klasse 3: 8000 Time-Bins, 350 Neuronen
+    Klasse 4: 7760 Time-Bins, 350 Neuronen
+    Klasse 5: 7840 Time-Bins, 350 Neuronen
+    Klasse 6: 7280 Time-Bins, 350 Neuronen
+    Klasse 7: 7280 Time-Bins, 350 Neuronen
+    Klasse 8: 7680 Time-Bins, 350 Neuronen
+    Klasse 9: 7280 Time-Bins, 350 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0106
+  Radius (R_M):    2.2243
+  Dimension (D_M): 144.2614
+  Correlation:     0.4948
+  Optimal K:       3
+Capacity: 0.0106
+Radius: 2.2243
+Dimension: 144.2614
+Analyzing activity log: epoch_004_lif1_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 128 Neuronen
+    Klasse 1: 7680 Time-Bins, 128 Neuronen
+    Klasse 2: 7120 Time-Bins, 128 Neuronen
+    Klasse 3: 8000 Time-Bins, 128 Neuronen
+    Klasse 4: 7760 Time-Bins, 128 Neuronen
+    Klasse 5: 7840 Time-Bins, 128 Neuronen
+    Klasse 6: 7280 Time-Bins, 128 Neuronen
+    Klasse 7: 7280 Time-Bins, 128 Neuronen
+    Klasse 8: 7680 Time-Bins, 128 Neuronen
+    Klasse 9: 7280 Time-Bins, 128 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0347
+  Radius (R_M):    1.1788
+  Dimension (D_M): 48.4092
+  Correlation:     0.4393
+  Optimal K:       3
+Capacity: 0.0347
+Radius: 1.1788
+Dimension: 48.4092
+Analyzing activity log: epoch_004_lif2_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 64 Neuronen
+    Klasse 1: 7680 Time-Bins, 64 Neuronen
+    Klasse 2: 7120 Time-Bins, 64 Neuronen
+    Klasse 3: 8000 Time-Bins, 64 Neuronen
+    Klasse 4: 7760 Time-Bins, 64 Neuronen
+    Klasse 5: 7840 Time-Bins, 64 Neuronen
+    Klasse 6: 7280 Time-Bins, 64 Neuronen
+    Klasse 7: 7280 Time-Bins, 64 Neuronen
+    Klasse 8: 7680 Time-Bins, 64 Neuronen
+    Klasse 9: 7280 Time-Bins, 64 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0320
+  Radius (R_M):    2.5590
+  Dimension (D_M): 36.1030
+  Correlation:     0.4399
+  Optimal K:       4
+Capacity: 0.0320
+Radius: 2.5590
+Dimension: 36.1030
+Analyzing activity log: epoch_004_lif3_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 10 Neuronen
+    Klasse 1: 7680 Time-Bins, 10 Neuronen
+    Klasse 2: 7120 Time-Bins, 10 Neuronen
+    Klasse 3: 8000 Time-Bins, 10 Neuronen
+    Klasse 4: 7760 Time-Bins, 10 Neuronen
+    Klasse 5: 7840 Time-Bins, 10 Neuronen
+    Klasse 6: 7280 Time-Bins, 10 Neuronen
+    Klasse 7: 7280 Time-Bins, 10 Neuronen
+    Klasse 8: 7680 Time-Bins, 10 Neuronen
+    Klasse 9: 7280 Time-Bins, 10 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.1468
+  Radius (R_M):    5.7530
+  Dimension (D_M): 6.7533
+  Correlation:     0.4056
+  Optimal K:       3
+Capacity: 0.1468
+Radius: 5.7530
+Dimension: 6.7533
+Analyzing activity log: epoch_005_lif0_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 350 Neuronen
+    Klasse 1: 7680 Time-Bins, 350 Neuronen
+    Klasse 2: 7120 Time-Bins, 350 Neuronen
+    Klasse 3: 8000 Time-Bins, 350 Neuronen
+    Klasse 4: 7760 Time-Bins, 350 Neuronen
+    Klasse 5: 7840 Time-Bins, 350 Neuronen
+    Klasse 6: 7280 Time-Bins, 350 Neuronen
+    Klasse 7: 7280 Time-Bins, 350 Neuronen
+    Klasse 8: 7680 Time-Bins, 350 Neuronen
+    Klasse 9: 7280 Time-Bins, 350 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0171
+  Radius (R_M):    1.0195
+  Dimension (D_M): 110.4123
+  Correlation:     0.4900
+  Optimal K:       2
+Capacity: 0.0171
+Radius: 1.0195
+Dimension: 110.4123
+Analyzing activity log: epoch_005_lif1_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 128 Neuronen
+    Klasse 1: 7680 Time-Bins, 128 Neuronen
+    Klasse 2: 7120 Time-Bins, 128 Neuronen
+    Klasse 3: 8000 Time-Bins, 128 Neuronen
+    Klasse 4: 7760 Time-Bins, 128 Neuronen
+    Klasse 5: 7840 Time-Bins, 128 Neuronen
+    Klasse 6: 7280 Time-Bins, 128 Neuronen
+    Klasse 7: 7280 Time-Bins, 128 Neuronen
+    Klasse 8: 7680 Time-Bins, 128 Neuronen
+    Klasse 9: 7280 Time-Bins, 128 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0261
+  Radius (R_M):    1.3552
+  Dimension (D_M): 58.0564
+  Correlation:     0.4274
+  Optimal K:       3
+Capacity: 0.0261
+Radius: 1.3552
+Dimension: 58.0564
+Analyzing activity log: epoch_005_lif2_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 64 Neuronen
+    Klasse 1: 7680 Time-Bins, 64 Neuronen
+    Klasse 2: 7120 Time-Bins, 64 Neuronen
+    Klasse 3: 8000 Time-Bins, 64 Neuronen
+    Klasse 4: 7760 Time-Bins, 64 Neuronen
+    Klasse 5: 7840 Time-Bins, 64 Neuronen
+    Klasse 6: 7280 Time-Bins, 64 Neuronen
+    Klasse 7: 7280 Time-Bins, 64 Neuronen
+    Klasse 8: 7680 Time-Bins, 64 Neuronen
+    Klasse 9: 7280 Time-Bins, 64 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0365
+  Radius (R_M):    5.5333
+  Dimension (D_M): 35.0209
+  Correlation:     0.4131
+  Optimal K:       3
+Capacity: 0.0365
+Radius: 5.5333
+Dimension: 35.0209
+Analyzing activity log: epoch_005_lif3_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 10 Neuronen
+    Klasse 1: 7680 Time-Bins, 10 Neuronen
+    Klasse 2: 7120 Time-Bins, 10 Neuronen
+    Klasse 3: 8000 Time-Bins, 10 Neuronen
+    Klasse 4: 7760 Time-Bins, 10 Neuronen
+    Klasse 5: 7840 Time-Bins, 10 Neuronen
+    Klasse 6: 7280 Time-Bins, 10 Neuronen
+    Klasse 7: 7280 Time-Bins, 10 Neuronen
+    Klasse 8: 7680 Time-Bins, 10 Neuronen
+    Klasse 9: 7280 Time-Bins, 10 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.1451
+  Radius (R_M):    5.4119
+  Dimension (D_M): 6.7470
+  Correlation:     0.3882
+  Optimal K:       3
+Capacity: 0.1451
+Radius: 5.4119
+Dimension: 6.7470
+Analyzing activity log: epoch_006_lif0_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 350 Neuronen
+    Klasse 1: 7680 Time-Bins, 350 Neuronen
+    Klasse 2: 7120 Time-Bins, 350 Neuronen
+    Klasse 3: 8000 Time-Bins, 350 Neuronen
+    Klasse 4: 7760 Time-Bins, 350 Neuronen
+    Klasse 5: 7840 Time-Bins, 350 Neuronen
+    Klasse 6: 7280 Time-Bins, 350 Neuronen
+    Klasse 7: 7280 Time-Bins, 350 Neuronen
+    Klasse 8: 7680 Time-Bins, 350 Neuronen
+    Klasse 9: 7280 Time-Bins, 350 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0106
+  Radius (R_M):    1.6830
+  Dimension (D_M): 149.6459
+  Correlation:     0.4893
+  Optimal K:       3
+Capacity: 0.0106
+Radius: 1.6830
+Dimension: 149.6459
+Analyzing activity log: epoch_006_lif1_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 128 Neuronen
+    Klasse 1: 7680 Time-Bins, 128 Neuronen
+    Klasse 2: 7120 Time-Bins, 128 Neuronen
+    Klasse 3: 8000 Time-Bins, 128 Neuronen
+    Klasse 4: 7760 Time-Bins, 128 Neuronen
+    Klasse 5: 7840 Time-Bins, 128 Neuronen
+    Klasse 6: 7280 Time-Bins, 128 Neuronen
+    Klasse 7: 7280 Time-Bins, 128 Neuronen
+    Klasse 8: 7680 Time-Bins, 128 Neuronen
+    Klasse 9: 7280 Time-Bins, 128 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0249
+  Radius (R_M):    1.3831
+  Dimension (D_M): 60.4899
+  Correlation:     0.4166
+  Optimal K:       3
+Capacity: 0.0249
+Radius: 1.3831
+Dimension: 60.4899
+Analyzing activity log: epoch_006_lif2_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 64 Neuronen
+    Klasse 1: 7680 Time-Bins, 64 Neuronen
+    Klasse 2: 7120 Time-Bins, 64 Neuronen
+    Klasse 3: 8000 Time-Bins, 64 Neuronen
+    Klasse 4: 7760 Time-Bins, 64 Neuronen
+    Klasse 5: 7840 Time-Bins, 64 Neuronen
+    Klasse 6: 7280 Time-Bins, 64 Neuronen
+    Klasse 7: 7280 Time-Bins, 64 Neuronen
+    Klasse 8: 7680 Time-Bins, 64 Neuronen
+    Klasse 9: 7280 Time-Bins, 64 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0298
+  Radius (R_M):    2.8043
+  Dimension (D_M): 38.7179
+  Correlation:     0.3973
+  Optimal K:       4
+Capacity: 0.0298
+Radius: 2.8043
+Dimension: 38.7179
+Analyzing activity log: epoch_006_lif3_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 10 Neuronen
+    Klasse 1: 7680 Time-Bins, 10 Neuronen
+    Klasse 2: 7120 Time-Bins, 10 Neuronen
+    Klasse 3: 8000 Time-Bins, 10 Neuronen
+    Klasse 4: 7760 Time-Bins, 10 Neuronen
+    Klasse 5: 7840 Time-Bins, 10 Neuronen
+    Klasse 6: 7280 Time-Bins, 10 Neuronen
+    Klasse 7: 7280 Time-Bins, 10 Neuronen
+    Klasse 8: 7680 Time-Bins, 10 Neuronen
+    Klasse 9: 7280 Time-Bins, 10 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.1502
+  Radius (R_M):    5.5616
+  Dimension (D_M): 6.6989
+  Correlation:     0.3902
+  Optimal K:       3
+Capacity: 0.1502
+Radius: 5.5616
+Dimension: 6.6989
+Analyzing activity log: epoch_007_lif0_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 350 Neuronen
+    Klasse 1: 7680 Time-Bins, 350 Neuronen
+    Klasse 2: 7120 Time-Bins, 350 Neuronen
+    Klasse 3: 8000 Time-Bins, 350 Neuronen
+    Klasse 4: 7760 Time-Bins, 350 Neuronen
+    Klasse 5: 7840 Time-Bins, 350 Neuronen
+    Klasse 6: 7280 Time-Bins, 350 Neuronen
+    Klasse 7: 7280 Time-Bins, 350 Neuronen
+    Klasse 8: 7680 Time-Bins, 350 Neuronen
+    Klasse 9: 7280 Time-Bins, 350 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0163
+  Radius (R_M):    1.0152
+  Dimension (D_M): 116.3521
+  Correlation:     0.4826
+  Optimal K:       2
+Capacity: 0.0163
+Radius: 1.0152
+Dimension: 116.3521
+Analyzing activity log: epoch_007_lif1_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 128 Neuronen
+    Klasse 1: 7680 Time-Bins, 128 Neuronen
+    Klasse 2: 7120 Time-Bins, 128 Neuronen
+    Klasse 3: 8000 Time-Bins, 128 Neuronen
+    Klasse 4: 7760 Time-Bins, 128 Neuronen
+    Klasse 5: 7840 Time-Bins, 128 Neuronen
+    Klasse 6: 7280 Time-Bins, 128 Neuronen
+    Klasse 7: 7280 Time-Bins, 128 Neuronen
+    Klasse 8: 7680 Time-Bins, 128 Neuronen
+    Klasse 9: 7280 Time-Bins, 128 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0241
+  Radius (R_M):    1.3720
+  Dimension (D_M): 62.9394
+  Correlation:     0.4055
+  Optimal K:       3
+Capacity: 0.0241
+Radius: 1.3720
+Dimension: 62.9394
+Analyzing activity log: epoch_007_lif2_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 64 Neuronen
+    Klasse 1: 7680 Time-Bins, 64 Neuronen
+    Klasse 2: 7120 Time-Bins, 64 Neuronen
+    Klasse 3: 8000 Time-Bins, 64 Neuronen
+    Klasse 4: 7760 Time-Bins, 64 Neuronen
+    Klasse 5: 7840 Time-Bins, 64 Neuronen
+    Klasse 6: 7280 Time-Bins, 64 Neuronen
+    Klasse 7: 7280 Time-Bins, 64 Neuronen
+    Klasse 8: 7680 Time-Bins, 64 Neuronen
+    Klasse 9: 7280 Time-Bins, 64 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0309
+  Radius (R_M):    2.8277
+  Dimension (D_M): 37.9724
+  Correlation:     0.3862
+  Optimal K:       4
+Capacity: 0.0309
+Radius: 2.8277
+Dimension: 37.9724
+Analyzing activity log: epoch_007_lif3_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 10 Neuronen
+    Klasse 1: 7680 Time-Bins, 10 Neuronen
+    Klasse 2: 7120 Time-Bins, 10 Neuronen
+    Klasse 3: 8000 Time-Bins, 10 Neuronen
+    Klasse 4: 7760 Time-Bins, 10 Neuronen
+    Klasse 5: 7840 Time-Bins, 10 Neuronen
+    Klasse 6: 7280 Time-Bins, 10 Neuronen
+    Klasse 7: 7280 Time-Bins, 10 Neuronen
+    Klasse 8: 7680 Time-Bins, 10 Neuronen
+    Klasse 9: 7280 Time-Bins, 10 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.1454
+  Radius (R_M):    5.4811
+  Dimension (D_M): 6.7542
+  Correlation:     0.3842
+  Optimal K:       3
+Capacity: 0.1454
+Radius: 5.4811
+Dimension: 6.7542
+Analyzing activity log: epoch_008_lif0_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 350 Neuronen
+    Klasse 1: 7680 Time-Bins, 350 Neuronen
+    Klasse 2: 7120 Time-Bins, 350 Neuronen
+    Klasse 3: 8000 Time-Bins, 350 Neuronen
+    Klasse 4: 7760 Time-Bins, 350 Neuronen
+    Klasse 5: 7840 Time-Bins, 350 Neuronen
+    Klasse 6: 7280 Time-Bins, 350 Neuronen
+    Klasse 7: 7280 Time-Bins, 350 Neuronen
+    Klasse 8: 7680 Time-Bins, 350 Neuronen
+    Klasse 9: 7280 Time-Bins, 350 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0129
+  Radius (R_M):    1.0809
+  Dimension (D_M): 140.1190
+  Correlation:     0.4797
+  Optimal K:       3
+Capacity: 0.0129
+Radius: 1.0809
+Dimension: 140.1190
+Analyzing activity log: epoch_008_lif1_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 128 Neuronen
+    Klasse 1: 7680 Time-Bins, 128 Neuronen
+    Klasse 2: 7120 Time-Bins, 128 Neuronen
+    Klasse 3: 8000 Time-Bins, 128 Neuronen
+    Klasse 4: 7760 Time-Bins, 128 Neuronen
+    Klasse 5: 7840 Time-Bins, 128 Neuronen
+    Klasse 6: 7280 Time-Bins, 128 Neuronen
+    Klasse 7: 7280 Time-Bins, 128 Neuronen
+    Klasse 8: 7680 Time-Bins, 128 Neuronen
+    Klasse 9: 7280 Time-Bins, 128 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0287
+  Radius (R_M):    1.1762
+  Dimension (D_M): 58.3702
+  Correlation:     0.3990
+  Optimal K:       3
+Capacity: 0.0287
+Radius: 1.1762
+Dimension: 58.3702
+Analyzing activity log: epoch_008_lif2_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 64 Neuronen
+    Klasse 1: 7680 Time-Bins, 64 Neuronen
+    Klasse 2: 7120 Time-Bins, 64 Neuronen
+    Klasse 3: 8000 Time-Bins, 64 Neuronen
+    Klasse 4: 7760 Time-Bins, 64 Neuronen
+    Klasse 5: 7840 Time-Bins, 64 Neuronen
+    Klasse 6: 7280 Time-Bins, 64 Neuronen
+    Klasse 7: 7280 Time-Bins, 64 Neuronen
+    Klasse 8: 7680 Time-Bins, 64 Neuronen
+    Klasse 9: 7280 Time-Bins, 64 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0373
+  Radius (R_M):    4.3085
+  Dimension (D_M): 35.7902
+  Correlation:     0.3759
+  Optimal K:       3
+Capacity: 0.0373
+Radius: 4.3085
+Dimension: 35.7902
+Analyzing activity log: epoch_008_lif3_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 10 Neuronen
+    Klasse 1: 7680 Time-Bins, 10 Neuronen
+    Klasse 2: 7120 Time-Bins, 10 Neuronen
+    Klasse 3: 8000 Time-Bins, 10 Neuronen
+    Klasse 4: 7760 Time-Bins, 10 Neuronen
+    Klasse 5: 7840 Time-Bins, 10 Neuronen
+    Klasse 6: 7280 Time-Bins, 10 Neuronen
+    Klasse 7: 7280 Time-Bins, 10 Neuronen
+    Klasse 8: 7680 Time-Bins, 10 Neuronen
+    Klasse 9: 7280 Time-Bins, 10 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.1458
+  Radius (R_M):    5.8945
+  Dimension (D_M): 6.7685
+  Correlation:     0.3863
+  Optimal K:       3
+Capacity: 0.1458
+Radius: 5.8945
+Dimension: 6.7685
+Analyzing activity log: epoch_009_lif0_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 350 Neuronen
+    Klasse 1: 7680 Time-Bins, 350 Neuronen
+    Klasse 2: 7120 Time-Bins, 350 Neuronen
+    Klasse 3: 8000 Time-Bins, 350 Neuronen
+    Klasse 4: 7760 Time-Bins, 350 Neuronen
+    Klasse 5: 7840 Time-Bins, 350 Neuronen
+    Klasse 6: 7280 Time-Bins, 350 Neuronen
+    Klasse 7: 7280 Time-Bins, 350 Neuronen
+    Klasse 8: 7680 Time-Bins, 350 Neuronen
+    Klasse 9: 7280 Time-Bins, 350 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0128
+  Radius (R_M):    1.0790
+  Dimension (D_M): 140.7324
+  Correlation:     0.4785
+  Optimal K:       3
+Capacity: 0.0128
+Radius: 1.0790
+Dimension: 140.7324
+Analyzing activity log: epoch_009_lif1_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 128 Neuronen
+    Klasse 1: 7680 Time-Bins, 128 Neuronen
+    Klasse 2: 7120 Time-Bins, 128 Neuronen
+    Klasse 3: 8000 Time-Bins, 128 Neuronen
+    Klasse 4: 7760 Time-Bins, 128 Neuronen
+    Klasse 5: 7840 Time-Bins, 128 Neuronen
+    Klasse 6: 7280 Time-Bins, 128 Neuronen
+    Klasse 7: 7280 Time-Bins, 128 Neuronen
+    Klasse 8: 7680 Time-Bins, 128 Neuronen
+    Klasse 9: 7280 Time-Bins, 128 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0228
+  Radius (R_M):    1.4342
+  Dimension (D_M): 66.0274
+  Correlation:     0.3955
+  Optimal K:       3
+Capacity: 0.0228
+Radius: 1.4342
+Dimension: 66.0274
+Analyzing activity log: epoch_009_lif2_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 64 Neuronen
+    Klasse 1: 7680 Time-Bins, 64 Neuronen
+    Klasse 2: 7120 Time-Bins, 64 Neuronen
+    Klasse 3: 8000 Time-Bins, 64 Neuronen
+    Klasse 4: 7760 Time-Bins, 64 Neuronen
+    Klasse 5: 7840 Time-Bins, 64 Neuronen
+    Klasse 6: 7280 Time-Bins, 64 Neuronen
+    Klasse 7: 7280 Time-Bins, 64 Neuronen
+    Klasse 8: 7680 Time-Bins, 64 Neuronen
+    Klasse 9: 7280 Time-Bins, 64 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0332
+  Radius (R_M):    2.0432
+  Dimension (D_M): 38.2926
+  Correlation:     0.3717
+  Optimal K:       3
+Capacity: 0.0332
+Radius: 2.0432
+Dimension: 38.2926
+Analyzing activity log: epoch_009_lif3_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 10 Neuronen
+    Klasse 1: 7680 Time-Bins, 10 Neuronen
+    Klasse 2: 7120 Time-Bins, 10 Neuronen
+    Klasse 3: 8000 Time-Bins, 10 Neuronen
+    Klasse 4: 7760 Time-Bins, 10 Neuronen
+    Klasse 5: 7840 Time-Bins, 10 Neuronen
+    Klasse 6: 7280 Time-Bins, 10 Neuronen
+    Klasse 7: 7280 Time-Bins, 10 Neuronen
+    Klasse 8: 7680 Time-Bins, 10 Neuronen
+    Klasse 9: 7280 Time-Bins, 10 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.1438
+  Radius (R_M):    5.0318
+  Dimension (D_M): 6.7831
+  Correlation:     0.3865
+  Optimal K:       3
+Capacity: 0.1438
+Radius: 5.0318
+Dimension: 6.7831
+Analyzing activity log: epoch_010_lif0_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 350 Neuronen
+    Klasse 1: 7680 Time-Bins, 350 Neuronen
+    Klasse 2: 7120 Time-Bins, 350 Neuronen
+    Klasse 3: 8000 Time-Bins, 350 Neuronen
+    Klasse 4: 7760 Time-Bins, 350 Neuronen
+    Klasse 5: 7840 Time-Bins, 350 Neuronen
+    Klasse 6: 7280 Time-Bins, 350 Neuronen
+    Klasse 7: 7280 Time-Bins, 350 Neuronen
+    Klasse 8: 7680 Time-Bins, 350 Neuronen
+    Klasse 9: 7280 Time-Bins, 350 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0102
+  Radius (R_M):    1.4515
+  Dimension (D_M): 153.8528
+  Correlation:     0.4765
+  Optimal K:       3
+Capacity: 0.0102
+Radius: 1.4515
+Dimension: 153.8528
+Analyzing activity log: epoch_010_lif1_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 128 Neuronen
+    Klasse 1: 7680 Time-Bins, 128 Neuronen
+    Klasse 2: 7120 Time-Bins, 128 Neuronen
+    Klasse 3: 8000 Time-Bins, 128 Neuronen
+    Klasse 4: 7760 Time-Bins, 128 Neuronen
+    Klasse 5: 7840 Time-Bins, 128 Neuronen
+    Klasse 6: 7280 Time-Bins, 128 Neuronen
+    Klasse 7: 7280 Time-Bins, 128 Neuronen
+    Klasse 8: 7680 Time-Bins, 128 Neuronen
+    Klasse 9: 7280 Time-Bins, 128 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0216
+  Radius (R_M):    2.6585
+  Dimension (D_M): 67.5276
+  Correlation:     0.3899
+  Optimal K:       3
+Capacity: 0.0216
+Radius: 2.6585
+Dimension: 67.5276
+Analyzing activity log: epoch_010_lif2_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 64 Neuronen
+    Klasse 1: 7680 Time-Bins, 64 Neuronen
+    Klasse 2: 7120 Time-Bins, 64 Neuronen
+    Klasse 3: 8000 Time-Bins, 64 Neuronen
+    Klasse 4: 7760 Time-Bins, 64 Neuronen
+    Klasse 5: 7840 Time-Bins, 64 Neuronen
+    Klasse 6: 7280 Time-Bins, 64 Neuronen
+    Klasse 7: 7280 Time-Bins, 64 Neuronen
+    Klasse 8: 7680 Time-Bins, 64 Neuronen
+    Klasse 9: 7280 Time-Bins, 64 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.0373
+  Radius (R_M):    1.8689
+  Dimension (D_M): 36.8869
+  Correlation:     0.3614
+  Optimal K:       3
+Capacity: 0.0373
+Radius: 1.8689
+Dimension: 36.8869
+Analyzing activity log: epoch_010_lif3_spk_events.h5
+Analysiere 10 Klassen mit max. 100 Samples pro Klasse
+  Sammle Daten für Label 0... ✓ 95 Samples, 7600 Time-Bins
+  Sammle Daten für Label 1... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 2... ✓ 89 Samples, 7120 Time-Bins
+  Sammle Daten für Label 3... ✓ 100 Samples, 8000 Time-Bins
+  Sammle Daten für Label 4... ✓ 97 Samples, 7760 Time-Bins
+  Sammle Daten für Label 5... ✓ 98 Samples, 7840 Time-Bins
+  Sammle Daten für Label 6... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 7... ✓ 91 Samples, 7280 Time-Bins
+  Sammle Daten für Label 8... ✓ 96 Samples, 7680 Time-Bins
+  Sammle Daten für Label 9... ✓ 91 Samples, 7280 Time-Bins
+
+Führe Manifold-Analyse durch...
+  10 Klassen mit Daten
+    Klasse 0: 7600 Time-Bins, 10 Neuronen
+    Klasse 1: 7680 Time-Bins, 10 Neuronen
+    Klasse 2: 7120 Time-Bins, 10 Neuronen
+    Klasse 3: 8000 Time-Bins, 10 Neuronen
+    Klasse 4: 7760 Time-Bins, 10 Neuronen
+    Klasse 5: 7840 Time-Bins, 10 Neuronen
+    Klasse 6: 7280 Time-Bins, 10 Neuronen
+    Klasse 7: 7280 Time-Bins, 10 Neuronen
+    Klasse 8: 7680 Time-Bins, 10 Neuronen
+    Klasse 9: 7280 Time-Bins, 10 Neuronen
+
+Ergebnisse:
+  Capacity (α_M):  0.1464
+  Radius (R_M):    6.0168
+  Dimension (D_M): 6.7736
+  Correlation:     0.3856
+  Optimal K:       3
+Capacity: 0.1464
+Radius: 6.0168
+Dimension: 6.7736

@@ -1,0 +1,12 @@
+Capacity: 0.0069
+Radius: 1.8510
+Dimension: 187.0195
+✅ Plot gespeichert: /home/karl-/git/SNN-Training-Evolution-Manifold-Untangling-Analysis/plots/manifold_metrics_all_layers.png
+✅ Plot gespeichert: /home/karl-/git/SNN-Training-Evolution-Manifold-Untangling-Analysis/plots/manifold_metrics_over_layers_all_epochs.png
+✅ Plot gespeichert: /home/karl-/git/SNN-Training-Evolution-Manifold-Untangling-Analysis/plots/manifold_metrics_all_layers_in_one_plot.png
+Capacity: 0.0069
+Radius: 1.8510
+Dimension: 187.0195
+✅ Plot gespeichert: /home/karl-/git/SNN-Training-Evolution-Manifold-Untangling-Analysis/plots/manifold_metrics_all_layers.png
+✅ Plot gespeichert: /home/karl-/git/SNN-Training-Evolution-Manifold-Untangling-Analysis/plots/manifold_metrics_over_layers_all_epochs.png
+✅ Plot gespeichert: /home/karl-/git/SNN-Training-Evolution-Manifold-Untangling-Analysis/plots/manifold_metrics_all_layers_in_one_plot.png

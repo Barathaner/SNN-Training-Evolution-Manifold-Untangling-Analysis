@@ -12,7 +12,7 @@ class Net(nn.Module):
         
         # Erste Hidden Layer: Hidden0 -> Hidden1
         self.fc1 = nn.Linear(num_inputs, num_hidden1)
-        self.lif1 = snn.Leaky(beta=beta)
+        self.lif1 = snn.RLeaky(beta=beta)
         
         # Zweite Hidden Layer: Hidden1 -> Hidden2 (hierarchisch)
         self.fc2 = nn.Linear(num_hidden1, num_hidden2)

@@ -14,6 +14,39 @@ import matplotlib.pyplot as plt
 from manifolduntanglinganalysis.mftma.manifold_analysis_correlation import manifold_analysis_corr
 
 
+def load_results_from_json(json_path: Union[str, Path]) -> Dict[tuple, Dict[str, float]]:
+    """
+    Lädt Ergebnisse aus einer JSON-Datei und konvertiert sie in das erwartete Format.
+    
+    Args:
+        json_path: Pfad zur JSON-Datei mit Struktur: {"epoch": {"layer": {"capacity": ..., "radius": ..., "dimension": ..., "correlation": ...}}}
+    
+    Returns:
+        Dictionary mit (epoch, layer_name) Tupeln als Keys: {(epoch, layer_name): {'capacity': float, 'radius': float, 'dimension': float, 'correlation': float}, ...}
+    """
+    json_path = Path(json_path)
+    if not json_path.exists():
+        raise FileNotFoundError(f"JSON-Datei nicht gefunden: {json_path}")
+    
+    import json
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+    
+    # Konvertiere von {"epoch": {"layer": {...}}} zu {(epoch, layer): {...}}
+    results = {}
+    for epoch_str, layers in data.items():
+        epoch = int(epoch_str)
+        for layer_name, metrics in layers.items():
+            results[(epoch, layer_name)] = {
+                'capacity': float(metrics['capacity']),
+                'radius': float(metrics['radius']),
+                'dimension': float(metrics['dimension']),
+                'correlation': float(metrics.get('correlation', 0.0))  # Fallback falls nicht vorhanden
+            }
+    
+    return results
+
+
 def analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds(
     dataloader,
     labels: List[int],
@@ -294,37 +327,50 @@ def analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds_rate_coded(
 
 
 def plot_manifold_metrics_over_epochs(
-    results: Union[List[Dict[str, Union[float, np.ndarray]]], Dict[tuple, Dict[str, Union[float, np.ndarray]]]],
+    results: Optional[Union[List[Dict[str, Union[float, np.ndarray]]], Dict[tuple, Dict[str, Union[float, np.ndarray]]]]] = None,
     activity_logs_path: Optional[Union[str, List[str]]] = None,
     input_data_metrics: Optional[Dict[str, float]] = None,
     save_dir: Optional[str] = None,
-    figsize_per_subplot: tuple = (5, 4)
+    figsize_per_subplot: tuple = (5, 4),
+    results_json_path: Optional[Union[str, Path]] = None
 ) -> plt.Figure:
     """
-    Erstellt einen Plot für Manifold-Metriken (Capacity, Radius, Dimension) über Epochen.
+    Erstellt einen Plot für Manifold-Metriken (Capacity, Radius, Dimension, Correlation) über Epochen.
     
-    Der Plot zeigt Layer in Zeilen und Metriken in Spalten. Jeder Subplot zeigt die
-    Entwicklung einer Metrik für einen Layer über die Epochen. Optional können Baseline-Werte
+    Der Plot zeigt Layer in Zeilen und Metriken in Spalten (4 Spalten: Capacity, Radius, Dimension, Correlation). 
+    Jeder Subplot zeigt die Entwicklung einer Metrik für einen Layer über die Epochen. Optional können Baseline-Werte
     aus Input-Daten als gestrichelte Linien angezeigt werden.
     
     Args:
-        results: Entweder:
+        results: Optional, entweder:
                 1. Dictionary mit (epoch, layer_name) Tupeln als Keys und Ergebnis-Dictionaries als Values
-                   Format: {(epoch, layer_name): {'capacity': float, 'radius': float, 'dimension': float}, ...}
+                   Format: {(epoch, layer_name): {'capacity': float, 'radius': float, 'dimension': float, 'correlation': float}, ...}
                 2. Liste von Ergebnis-Dictionaries (für Rückwärtskompatibilität)
+                3. None, wenn results_json_path verwendet wird
         activity_logs_path: Optional, entweder:
                             - Pfad zum Verzeichnis mit Activity-Log-Dateien (wenn results eine Liste ist)
                             - Liste von Dateinamen (wenn results eine Liste ist)
-                            - Wird ignoriert, wenn results ein Dictionary ist
+                            - Wird ignoriert, wenn results ein Dictionary ist oder results_json_path verwendet wird
         input_data_metrics: Optional, Dictionary mit Baseline-Metriken für Input-Daten.
-                          Format: {'capacity': float, 'radius': float, 'dimension': float}
-                          Wird als gestrichelte rote Linie in jedem Plot angezeigt.
+                          Format: {'capacity': float, 'radius': float, 'dimension': float, 'correlation': float}
+                          Wird als gestrichelte rote Linie in jedem Plot angezeigt (nur für Capacity, Radius, Dimension).
         save_dir: Optional, Verzeichnis zum Speichern des Plots. Wenn None, wird Plot nicht gespeichert.
         figsize_per_subplot: Größe pro Subplot (default: (5, 4))
+        results_json_path: Optional, Pfad zu einer JSON-Datei mit Ergebnissen.
+                          Format: {"epoch": {"layer": {"capacity": ..., "radius": ..., "dimension": ..., "correlation": ...}}}
+                          Wenn gesetzt, werden die Daten aus der JSON-Datei geladen und results/activity_logs_path ignoriert.
     
     Returns:
         matplotlib.pyplot.Figure: Die erstellte Figure
     """
+    # Lade Daten aus JSON, falls results_json_path angegeben ist
+    if results_json_path is not None:
+        results = load_results_from_json(results_json_path)
+        activity_logs_path = None  # Wird nicht benötigt, wenn results ein Dictionary ist
+    
+    if results is None:
+        raise ValueError("Entweder results oder results_json_path muss angegeben werden")
+    
     layer_data = {}  # {layer_name: {epoch: {metric: value}}}
     
     # Prüfe, ob results ein Dictionary oder eine Liste ist
@@ -337,7 +383,8 @@ def plot_manifold_metrics_over_epochs(
             layer_data[layer_name][epoch] = {
                 'capacity': result['capacity'],
                 'radius': result['radius'],
-                'dimension': result['dimension']
+                'dimension': result['dimension'],
+                'correlation': result.get('correlation', 0.0)  # Fallback falls nicht vorhanden
             }
     elif isinstance(results, list):
         # Alte API: Liste von Ergebnissen + activity_logs_path
@@ -379,7 +426,8 @@ def plot_manifold_metrics_over_epochs(
             layer_data[layer_name][epoch] = {
                 'capacity': result['capacity'],
                 'radius': result['radius'],
-                'dimension': result['dimension']
+                'dimension': result['dimension'],
+                'correlation': result.get('correlation', 0.0)  # Fallback falls nicht vorhanden
             }
     else:
         raise TypeError(f"results muss ein Dictionary oder eine Liste sein, nicht {type(results)}")
@@ -391,10 +439,10 @@ def plot_manifold_metrics_over_epochs(
     layer_names = sorted(layer_data.keys())
     n_layers = len(layer_names)
     
-    # Erstelle ein großes Subplot-Grid: n_layers Zeilen × 3 Spalten
+    # Erstelle ein großes Subplot-Grid: n_layers Zeilen × 4 Spalten (inkl. Correlation)
     fig, axes = plt.subplots(
-        n_layers, 3, 
-        figsize=(figsize_per_subplot[0] * 3, figsize_per_subplot[1] * n_layers)
+        n_layers, 4, 
+        figsize=(figsize_per_subplot[0] * 4, figsize_per_subplot[1] * n_layers)
     )
     
     # Falls nur ein Layer, mache axes zu 2D-Array
@@ -403,11 +451,11 @@ def plot_manifold_metrics_over_epochs(
     
     fig.suptitle('Manifold Metriken über Epochen', fontsize=16, fontweight='bold', y=1.0)
     
-    # Metriken-Namen und Farben
-    metric_names = ['Capacity (α_M)', 'Radius (R_M)', 'Dimension (D_M)']
-    metric_keys = ['capacity', 'radius', 'dimension']
-    colors = ['blue', 'orange', 'green']
-    markers = ['o', 's', '^']
+    # Metriken-Namen und Farben (inkl. Correlation)
+    metric_names = ['Capacity (α_M)', 'Radius (R_M)', 'Dimension (D_M)', 'Correlation']
+    metric_keys = ['capacity', 'radius', 'dimension', 'correlation']
+    colors = ['blue', 'orange', 'green', 'purple']
+    markers = ['o', 's', '^', 'D']
     
     # Plotte für jeden Layer
     for row_idx, layer_name in enumerate(layer_names):
@@ -418,7 +466,8 @@ def plot_manifold_metrics_over_epochs(
         metric_values = {
             'capacity': [epochs_data[ep]['capacity'] for ep in epochs],
             'radius': [epochs_data[ep]['radius'] for ep in epochs],
-            'dimension': [epochs_data[ep]['dimension'] for ep in epochs]
+            'dimension': [epochs_data[ep]['dimension'] for ep in epochs],
+            'correlation': [epochs_data[ep].get('correlation', 0.0) for ep in epochs]
         }
         
         # Plotte jede Metrik in einer Spalte
@@ -479,37 +528,50 @@ def plot_manifold_metrics_over_epochs(
 
 
 def plot_manifold_metrics_over_epochs_all_layer_in_one_plot(
-    results: Union[List[Dict[str, Union[float, np.ndarray]]], Dict[tuple, Dict[str, Union[float, np.ndarray]]]],
+    results: Optional[Union[List[Dict[str, Union[float, np.ndarray]]], Dict[tuple, Dict[str, Union[float, np.ndarray]]]]] = None,
     activity_logs_path: Optional[Union[str, List[str]]] = None,
     input_data_metrics: Optional[Dict[str, float]] = None,
     save_dir: Optional[str] = None,
-    figsize_per_subplot: tuple = (6, 4)
+    figsize_per_subplot: tuple = (6, 4),
+    results_json_path: Optional[Union[str, Path]] = None
 ) -> plt.Figure:
     """
-    Erstellt einen Plot für Manifold-Metriken (Capacity, Radius, Dimension) über Epochen.
+    Erstellt einen Plot für Manifold-Metriken (Capacity, Radius, Dimension, Correlation) über Epochen.
     
-    Der Plot zeigt alle Layer in einem Plot pro Metrik. Jeder Subplot zeigt die
-    Entwicklung aller Layer für eine Metrik über die Epochen. Optional können Baseline-Werte
+    Der Plot zeigt alle Layer in einem Plot pro Metrik (4 Subplots: Capacity, Radius, Dimension, Correlation). 
+    Jeder Subplot zeigt die Entwicklung aller Layer für eine Metrik über die Epochen. Optional können Baseline-Werte
     aus Input-Daten als gestrichelte Linien angezeigt werden.
     
     Args:
-        results: Entweder:
+        results: Optional, entweder:
                 1. Dictionary mit (epoch, layer_name) Tupeln als Keys und Ergebnis-Dictionaries als Values
-                   Format: {(epoch, layer_name): {'capacity': float, 'radius': float, 'dimension': float}, ...}
+                   Format: {(epoch, layer_name): {'capacity': float, 'radius': float, 'dimension': float, 'correlation': float}, ...}
                 2. Liste von Ergebnis-Dictionaries (für Rückwärtskompatibilität)
+                3. None, wenn results_json_path verwendet wird
         activity_logs_path: Optional, entweder:
                             - Pfad zum Verzeichnis mit Activity-Log-Dateien (wenn results eine Liste ist)
                             - Liste von Dateinamen (wenn results eine Liste ist)
-                            - Wird ignoriert, wenn results ein Dictionary ist
+                            - Wird ignoriert, wenn results ein Dictionary ist oder results_json_path verwendet wird
         input_data_metrics: Optional, Dictionary mit Baseline-Metriken für Input-Daten.
-                          Format: {'capacity': float, 'radius': float, 'dimension': float}
-                          Wird als gestrichelte rote Linie in jedem Plot angezeigt.
+                          Format: {'capacity': float, 'radius': float, 'dimension': float, 'correlation': float}
+                          Wird als gestrichelte rote Linie in jedem Plot angezeigt (nur für Capacity, Radius, Dimension).
         save_dir: Optional, Verzeichnis zum Speichern des Plots. Wenn None, wird Plot nicht gespeichert.
         figsize_per_subplot: Größe pro Subplot (default: (6, 4))
+        results_json_path: Optional, Pfad zu einer JSON-Datei mit Ergebnissen.
+                          Format: {"epoch": {"layer": {"capacity": ..., "radius": ..., "dimension": ..., "correlation": ...}}}
+                          Wenn gesetzt, werden die Daten aus der JSON-Datei geladen und results/activity_logs_path ignoriert.
     
     Returns:
         matplotlib.pyplot.Figure: Die erstellte Figure
     """
+    # Lade Daten aus JSON, falls results_json_path angegeben ist
+    if results_json_path is not None:
+        results = load_results_from_json(results_json_path)
+        activity_logs_path = None  # Wird nicht benötigt, wenn results ein Dictionary ist
+    
+    if results is None:
+        raise ValueError("Entweder results oder results_json_path muss angegeben werden")
+    
     layer_data = {}  # {layer_name: {epoch: {metric: value}}}
     
     # Prüfe, ob results ein Dictionary oder eine Liste ist
@@ -522,7 +584,8 @@ def plot_manifold_metrics_over_epochs_all_layer_in_one_plot(
             layer_data[layer_name][epoch] = {
                 'capacity': result['capacity'],
                 'radius': result['radius'],
-                'dimension': result['dimension']
+                'dimension': result['dimension'],
+                'correlation': result.get('correlation', 0.0)  # Fallback falls nicht vorhanden
             }
     elif isinstance(results, list):
         # Alte API: Liste von Ergebnissen + activity_logs_path
@@ -564,7 +627,8 @@ def plot_manifold_metrics_over_epochs_all_layer_in_one_plot(
             layer_data[layer_name][epoch] = {
                 'capacity': result['capacity'],
                 'radius': result['radius'],
-                'dimension': result['dimension']
+                'dimension': result['dimension'],
+                'correlation': result.get('correlation', 0.0)  # Fallback falls nicht vorhanden
             }
     else:
         raise TypeError(f"results muss ein Dictionary oder eine Liste sein, nicht {type(results)}")
@@ -576,10 +640,10 @@ def plot_manifold_metrics_over_epochs_all_layer_in_one_plot(
     layer_names = sorted(layer_data.keys())
     n_layers = len(layer_names)
     
-    # Erstelle ein Subplot-Grid: 3 Zeilen × 1 Spalte (eine Metrik pro Zeile)
+    # Erstelle ein Subplot-Grid: 4 Zeilen × 1 Spalte (eine Metrik pro Zeile, inkl. Correlation)
     fig, axes = plt.subplots(
-        3, 1, 
-        figsize=(figsize_per_subplot[0], figsize_per_subplot[1] * 3)
+        4, 1, 
+        figsize=(figsize_per_subplot[0], figsize_per_subplot[1] * 4)
     )
     
     # Falls nur eine Metrik, mache axes zu Array
@@ -588,9 +652,9 @@ def plot_manifold_metrics_over_epochs_all_layer_in_one_plot(
     
     fig.suptitle('Manifold Metriken über Epochen (Alle Layer)', fontsize=16, fontweight='bold', y=0.995)
     
-    # Metriken-Namen und Farben für Baseline
-    metric_names = ['Capacity (α_M)', 'Radius (R_M)', 'Dimension (D_M)']
-    metric_keys = ['capacity', 'radius', 'dimension']
+    # Metriken-Namen und Farben für Baseline (inkl. Correlation)
+    metric_names = ['Capacity (α_M)', 'Radius (R_M)', 'Dimension (D_M)', 'Correlation']
+    metric_keys = ['capacity', 'radius', 'dimension', 'correlation']
     baseline_color = 'red'
     
     # Farben und Marker für verschiedene Layer
@@ -613,7 +677,7 @@ def plot_manifold_metrics_over_epochs_all_layer_in_one_plot(
             epochs = sorted(epochs_data.keys())
             
             # Extrahiere Metrik-Werte für diesen Layer
-            metric_values = [epochs_data[ep][metric_key] for ep in epochs]
+            metric_values = [epochs_data[ep].get(metric_key, 0.0) for ep in epochs]
             
             # Wähle Farbe und Marker für diesen Layer
             color = layer_colors[layer_idx]
@@ -659,37 +723,50 @@ def plot_manifold_metrics_over_epochs_all_layer_in_one_plot(
 
 
 def plot_manifold_metrics_over_layer(
-    results: Union[List[Dict[str, Union[float, np.ndarray]]], Dict[tuple, Dict[str, Union[float, np.ndarray]]]],
+    results: Optional[Union[List[Dict[str, Union[float, np.ndarray]]], Dict[tuple, Dict[str, Union[float, np.ndarray]]]]] = None,
     activity_logs_path: Optional[Union[str, List[str]]] = None,
     input_data_metrics: Optional[Dict[str, float]] = None,
     save_dir: Optional[str] = None,
-    figsize_per_subplot: tuple = (6, 4)
+    figsize_per_subplot: tuple = (6, 4),
+    results_json_path: Optional[Union[str, Path]] = None
 ) -> plt.Figure:
     """
-    Erstellt einen Plot für Manifold-Metriken (Capacity, Radius, Dimension) über Layer.
+    Erstellt einen Plot für Manifold-Metriken (Capacity, Radius, Dimension, Correlation) über Layer.
     
     Der Plot zeigt Layer auf der X-Achse und Metrik-Werte auf der Y-Achse. Jede Epoche
-    wird als separate Linie dargestellt. Jeder Subplot zeigt eine Metrik (Capacity, Radius, Dimension).
+    wird als separate Linie dargestellt. Jeder Subplot zeigt eine Metrik (4 Subplots: Capacity, Radius, Dimension, Correlation).
     Optional können Baseline-Werte aus Input-Daten als gestrichelte Linien angezeigt werden.
     
     Args:
-        results: Entweder:
+        results: Optional, entweder:
                 1. Dictionary mit (epoch, layer_name) Tupeln als Keys und Ergebnis-Dictionaries als Values
-                   Format: {(epoch, layer_name): {'capacity': float, 'radius': float, 'dimension': float}, ...}
+                   Format: {(epoch, layer_name): {'capacity': float, 'radius': float, 'dimension': float, 'correlation': float}, ...}
                 2. Liste von Ergebnis-Dictionaries (für Rückwärtskompatibilität)
+                3. None, wenn results_json_path verwendet wird
         activity_logs_path: Optional, entweder:
                             - Pfad zum Verzeichnis mit Activity-Log-Dateien (wenn results eine Liste ist)
                             - Liste von Dateinamen (wenn results eine Liste ist)
-                            - Wird ignoriert, wenn results ein Dictionary ist
+                            - Wird ignoriert, wenn results ein Dictionary ist oder results_json_path verwendet wird
         input_data_metrics: Optional, Dictionary mit Baseline-Metriken für Input-Daten.
-                          Format: {'capacity': float, 'radius': float, 'dimension': float}
-                          Wird als gestrichelte rote Linie in jedem Plot angezeigt.
+                          Format: {'capacity': float, 'radius': float, 'dimension': float, 'correlation': float}
+                          Wird als gestrichelte rote Linie in jedem Plot angezeigt (nur für Capacity, Radius, Dimension).
         save_dir: Optional, Verzeichnis zum Speichern des Plots. Wenn None, wird Plot nicht gespeichert.
         figsize_per_subplot: Größe pro Subplot (default: (6, 4))
+        results_json_path: Optional, Pfad zu einer JSON-Datei mit Ergebnissen.
+                          Format: {"epoch": {"layer": {"capacity": ..., "radius": ..., "dimension": ..., "correlation": ...}}}
+                          Wenn gesetzt, werden die Daten aus der JSON-Datei geladen und results/activity_logs_path ignoriert.
     
     Returns:
         matplotlib.pyplot.Figure: Die erstellte Figure
     """
+    # Lade Daten aus JSON, falls results_json_path angegeben ist
+    if results_json_path is not None:
+        results = load_results_from_json(results_json_path)
+        activity_logs_path = None  # Wird nicht benötigt, wenn results ein Dictionary ist
+    
+    if results is None:
+        raise ValueError("Entweder results oder results_json_path muss angegeben werden")
+    
     layer_data = {}  # {layer_name: {epoch: {metric: value}}}
     
     # Prüfe, ob results ein Dictionary oder eine Liste ist
@@ -702,7 +779,8 @@ def plot_manifold_metrics_over_layer(
             layer_data[layer_name][epoch] = {
                 'capacity': result['capacity'],
                 'radius': result['radius'],
-                'dimension': result['dimension']
+                'dimension': result['dimension'],
+                'correlation': result.get('correlation', 0.0)  # Fallback falls nicht vorhanden
             }
     elif isinstance(results, list):
         # Alte API: Liste von Ergebnissen + activity_logs_path
@@ -744,7 +822,8 @@ def plot_manifold_metrics_over_layer(
             layer_data[layer_name][epoch] = {
                 'capacity': result['capacity'],
                 'radius': result['radius'],
-                'dimension': result['dimension']
+                'dimension': result['dimension'],
+                'correlation': result.get('correlation', 0.0)  # Fallback falls nicht vorhanden
             }
     else:
         raise TypeError(f"results muss ein Dictionary oder eine Liste sein, nicht {type(results)}")
@@ -762,10 +841,10 @@ def plot_manifold_metrics_over_layer(
         all_epochs.update(layer_data[layer_name].keys())
     all_epochs = sorted(all_epochs)
     
-    # Erstelle ein Subplot-Grid: 3 Zeilen × 1 Spalte (eine Metrik pro Zeile)
+    # Erstelle ein Subplot-Grid: 4 Zeilen × 1 Spalte (eine Metrik pro Zeile, inkl. Correlation)
     fig, axes = plt.subplots(
-        3, 1, 
-        figsize=(figsize_per_subplot[0], figsize_per_subplot[1] * 3)
+        4, 1, 
+        figsize=(figsize_per_subplot[0], figsize_per_subplot[1] * 4)
     )
     
     # Falls nur eine Metrik, mache axes zu Array
@@ -774,9 +853,9 @@ def plot_manifold_metrics_over_layer(
     
     fig.suptitle('Manifold Metriken über Layer (Alle Epochen)', fontsize=16, fontweight='bold', y=0.995)
     
-    # Metriken-Namen
-    metric_names = ['Capacity (α_M)', 'Radius (R_M)', 'Dimension (D_M)']
-    metric_keys = ['capacity', 'radius', 'dimension']
+    # Metriken-Namen (inkl. Correlation)
+    metric_names = ['Capacity (α_M)', 'Radius (R_M)', 'Dimension (D_M)', 'Correlation']
+    metric_keys = ['capacity', 'radius', 'dimension', 'correlation']
     baseline_color = 'red'
     
     # Farben für verschiedene Epochen
@@ -796,7 +875,7 @@ def plot_manifold_metrics_over_layer(
             metric_values = []
             for layer_name in layer_names:
                 if epoch in layer_data[layer_name]:
-                    metric_values.append(layer_data[layer_name][epoch][metric_key])
+                    metric_values.append(layer_data[layer_name][epoch].get(metric_key, 0.0))
                 else:
                     # Wenn Daten für diese Epoche fehlen, verwende NaN
                     metric_values.append(np.nan)
