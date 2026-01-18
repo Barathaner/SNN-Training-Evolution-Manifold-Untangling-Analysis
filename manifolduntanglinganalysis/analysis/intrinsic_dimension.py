@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 from torch.utils.data import DataLoader
 from sklearn.decomposition import PCA
 import skdim
@@ -187,5 +187,160 @@ def twonn_intrinsic_dimension(dataloader: DataLoader,
     
     print(f"✅ Two-NN geschätzte Dimension: {dim:.2f}")
     return dim
+
+
+def plot_intrinsic_dimensions_over_layers(
+    results: dict,
+    input_data_metrics: Optional[dict] = None,
+    save_dir: Optional[str] = None,
+    figsize_per_subplot: tuple = (6, 4),
+    results_json_path: Optional[Union[str, Path]] = None
+) -> plt.Figure:
+    """
+    Erstellt Plots für intrinsische Dimensionen (PCA, MLE, Two-NN) über Layer.
+    
+    Der Plot zeigt Layer auf der X-Achse und intrinsische Dimension auf der Y-Achse. 
+    Jede Epoche wird als separate Linie dargestellt. Es werden 3 Subplots erstellt:
+    einer für PCA, einer für MLE und einer für Two-NN.
+    
+    Args:
+        results: Dictionary mit Struktur {epoch: {layer: {'PCA': float, 'MLE': float, 'Two-NN': float}}}
+        input_data_metrics: Optional, Dictionary mit Baseline-Werten für Input-Daten.
+                          Format: {'PCA': float, 'MLE': float, 'Two-NN': float}
+                          Wird als gestrichelte rote Linie in jedem Plot angezeigt.
+        save_dir: Optional, Verzeichnis zum Speichern des Plots. Wenn None, wird Plot nicht gespeichert.
+        figsize_per_subplot: Größe pro Subplot (default: (6, 4))
+        results_json_path: Optional, Pfad zu einer JSON-Datei mit Ergebnissen.
+                          Format: {"epoch": {"layer": {"PCA": ..., "MLE": ..., "Two-NN": ...}}}
+                          Wenn gesetzt, werden die Daten aus der JSON-Datei geladen und results ignoriert.
+    
+    Returns:
+        matplotlib.pyplot.Figure: Die erstellte Figure
+    """
+    import json
+    from pathlib import Path
+    
+    # Lade Daten aus JSON, falls results_json_path angegeben ist
+    if results_json_path is not None:
+        results_json_path = Path(results_json_path)
+        if not results_json_path.exists():
+            raise ValueError(f"JSON-Datei existiert nicht: {results_json_path}")
+        
+        with open(results_json_path, 'r') as f:
+            results = json.load(f)
+    
+    if results is None or not isinstance(results, dict):
+        raise ValueError("results muss ein Dictionary sein oder results_json_path muss angegeben werden")
+    
+    # Strukturiere Daten: {layer_name: {epoch: {metric: value}}}
+    layer_data = {}
+    
+    for epoch, epoch_data in results.items():
+        epoch = int(epoch)  # Konvertiere zu int für Sortierung
+        if not isinstance(epoch_data, dict):
+            continue
+        
+        for layer_name, layer_metrics in epoch_data.items():
+            if layer_name not in layer_data:
+                layer_data[layer_name] = {}
+            
+            layer_data[layer_name][epoch] = {
+                'PCA': float(layer_metrics.get('PCA', 0.0)),
+                'MLE': float(layer_metrics.get('MLE', 0.0)),
+                'Two-NN': float(layer_metrics.get('Two-NN', 0.0))
+            }
+    
+    if not layer_data:
+        raise ValueError("Keine gültigen Layer-Daten gefunden.")
+    
+    # Sortiere Layer für konsistente Reihenfolge
+    layer_names = sorted(layer_data.keys())
+    n_layers = len(layer_names)
+    
+    # Sammle alle Epochen für alle Layer
+    all_epochs = set()
+    for layer_name in layer_names:
+        all_epochs.update(layer_data[layer_name].keys())
+    all_epochs = sorted(all_epochs)
+    
+    # Erstelle ein Subplot-Grid: 3 Zeilen × 1 Spalte (eine Metrik pro Zeile)
+    fig, axes = plt.subplots(
+        3, 1, 
+        figsize=(figsize_per_subplot[0], figsize_per_subplot[1] * 3)
+    )
+    
+    # Falls nur eine Metrik, mache axes zu Array
+    if not isinstance(axes, np.ndarray):
+        axes = np.array([axes])
+    
+    fig.suptitle('Intrinsische Dimensionen über Layer (Alle Epochen)', fontsize=16, fontweight='bold', y=0.995)
+    
+    # Metriken-Namen
+    metric_names = ['PCA (80% Varianz)', 'MLE (Maximum Likelihood)', 'Two-NN']
+    metric_keys = ['PCA', 'MLE', 'Two-NN']
+    baseline_color = 'red'
+    
+    # Farben für verschiedene Epochen
+    epoch_colors = plt.cm.viridis(np.linspace(0, 1, len(all_epochs)))
+    epoch_markers = ['o', 's', '^', 'D', 'v', '<', '>', 'p', '*', 'h']
+    
+    # Layer-Positionen für X-Achse (numerisch für Plot, dann Labels)
+    layer_positions = np.arange(len(layer_names))
+    
+    # Plotte jede Metrik in einer Zeile
+    for row_idx, (metric_key, metric_name) in enumerate(zip(metric_keys, metric_names)):
+        ax = axes[row_idx]
+        
+        # Plotte jede Epoche als separate Linie
+        for epoch_idx, epoch in enumerate(all_epochs):
+            # Sammle Metrik-Werte für diese Epoche über alle Layer
+            metric_values = []
+            for layer_name in layer_names:
+                if epoch in layer_data[layer_name]:
+                    metric_values.append(layer_data[layer_name][epoch].get(metric_key, 0.0))
+                else:
+                    metric_values.append(np.nan)  # Fehlende Werte als NaN
+            
+            # Wähle Farbe und Marker für diese Epoche
+            color = epoch_colors[epoch_idx]
+            marker = epoch_markers[epoch_idx % len(epoch_markers)]
+            
+            # Plot der Epoche-Daten
+            ax.plot(
+                layer_positions, metric_values,
+                marker=marker, linestyle='-', linewidth=2,
+                markersize=7, color=color, label=f'Epoch {epoch}',
+                alpha=0.8
+            )
+        
+        # Baseline-Linie (gestrichelt) falls vorhanden
+        if input_data_metrics is not None and metric_key in input_data_metrics:
+            baseline_value = input_data_metrics[metric_key]
+            ax.axhline(
+                y=baseline_value,
+                color=baseline_color, linestyle='--', linewidth=2,
+                alpha=0.7, label='Input Data (Baseline)'
+            )
+        
+        # Labels und Titel
+        ax.set_title(metric_name, fontsize=13, fontweight='bold', pad=10)
+        ax.set_xlabel('Layer', fontsize=11)
+        ax.set_ylabel('Intrinsische Dimension', fontsize=11)
+        ax.set_xticks(layer_positions)
+        ax.set_xticklabels(layer_names, rotation=45, ha='right')
+        ax.grid(True, alpha=0.3)
+        ax.legend(loc='best', fontsize=9, ncol=min(len(all_epochs) + (1 if input_data_metrics else 0), 5))
+    
+    plt.tight_layout()
+    
+    # Speichere Plot falls gewünscht
+    if save_dir is not None:
+        save_dir = Path(save_dir)
+        save_dir.mkdir(parents=True, exist_ok=True)
+        filepath = save_dir / 'intrinsic_dimensions_over_layers.png'
+        plt.savefig(filepath, dpi=300, bbox_inches='tight')
+        print(f"✅ Plot gespeichert: {filepath}")
+    
+    return fig
 
 

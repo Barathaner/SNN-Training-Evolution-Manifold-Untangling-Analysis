@@ -49,6 +49,12 @@ class Trainer:
             
             loss = self.loss_fn(spike_sums, labels)
             loss.backward()
+            
+            # Gradient Clipping für rekurrente Netze (verhindert Gradient-Explosion)
+            # Wichtig für stabile Trainings bei RSNNs
+            # Aggressiveres Clipping für sehr instabile Netze
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=0.5)
+            
             self.optimizer.step()
             
             total_loss += loss.item() * labels.size(0)
@@ -104,12 +110,44 @@ class Trainer:
         recall = recall_score(all_labels, all_preds, average='weighted', zero_division=0)
         f1 = f1_score(all_labels, all_preds, average='weighted', zero_division=0)
         
+        # AUC-ROC Berechnung: roc_auc_score benötigt Labels, die von 0 beginnen
         try:
-            if len(np.unique(all_labels)) > 1:
-                auc_roc = roc_auc_score(all_labels, all_probs, multi_class='ovr', average='weighted')
+            unique_labels = np.unique(all_labels)
+            n_unique_labels = len(unique_labels)
+            
+            if n_unique_labels > 1:
+                # Normalisiere Labels zu 0, 1, 2, ... falls sie nicht von 0 beginnen
+                min_label = unique_labels.min()
+                if min_label != 0:
+                    # Erstelle Mapping: alte Label -> neue Label (0, 1, 2, ...)
+                    sorted_unique = sorted(unique_labels)
+                    label_mapping = {old: new for new, old in enumerate(sorted_unique)}
+                    normalized_labels = np.array([label_mapping[label] for label in all_labels])
+                else:
+                    normalized_labels = all_labels
+                
+                # roc_auc_score erwartet, dass all_probs.shape[1] >= max(normalized_labels) + 1
+                # Verwende nur die Spalten, die den normalisierten Labels entsprechen
+                max_label = normalized_labels.max()
+                n_classes_needed = max_label + 1
+                
+                if all_probs.shape[1] >= n_classes_needed:
+                    # Verwende nur die ersten n_classes_needed Spalten
+                    probs_to_use = all_probs[:, :n_classes_needed]
+                    auc_roc = roc_auc_score(normalized_labels, probs_to_use, multi_class='ovr', average='weighted')
+                else:
+                    print(f"Warnung: all_probs hat nur {all_probs.shape[1]} Spalten, aber {n_classes_needed} benötigt")
+                    auc_roc = 0.0
             else:
                 auc_roc = 0.0
-        except:
+        except Exception as e:
+            # Logge den Fehler für Debugging
+            print(f"Warnung: AUC-ROC Berechnung fehlgeschlagen: {e}")
+            print(f"  Unique Labels: {np.unique(all_labels) if len(all_labels) > 0 else 'leer'}")
+            print(f"  Labels Shape: {all_labels.shape if hasattr(all_labels, 'shape') else 'N/A'}")
+            print(f"  Probs Shape: {all_probs.shape if hasattr(all_probs, 'shape') else 'N/A'}")
+            import traceback
+            traceback.print_exc()
             auc_roc = 0.0
         
         self.history['val_loss'].append(avg_loss)
