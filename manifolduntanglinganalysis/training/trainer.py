@@ -33,9 +33,9 @@ class Trainer:
     def train_epoch(self, dataloader: DataLoader):
         self.model.train()
         total_loss = 0
-        all_preds = []
-        all_labels = []
+        all_labels_for_loss = []
         
+        # Training: Nur Loss berechnen während des Trainings
         for events, labels in dataloader:
             if events.ndim == 4:
                 events = events.squeeze(2)
@@ -52,18 +52,88 @@ class Trainer:
             self.optimizer.step()
             
             total_loss += loss.item() * labels.size(0)
-            preds = torch.argmax(spike_sums, dim=1)
-            all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
+            all_labels_for_loss.extend(labels.cpu().numpy())
+        
+        # Berechne Train-Accuracy NACH dem Training im eval-Modus (konsistent mit Validation)
+        # Dies macht die Train- und Validation-Accuracy direkt vergleichbar
+        total_samples = len(all_labels_for_loss)
+        avg_loss = total_loss / total_samples if total_samples > 0 else 0.0
+        
+        # Berechne Accuracy im eval-Modus für konsistente Vergleichbarkeit
+        train_accuracy = self._compute_accuracy_in_eval_mode(dataloader)
+        
+        self.history['train_loss'].append(avg_loss)
+        self.history['train_accuracy'].append(train_accuracy)
+        
+        return avg_loss, train_accuracy
+    
+    def _compute_accuracy_in_eval_mode(self, dataloader: DataLoader):
+        """Hilfsfunktion: Berechnet Accuracy im eval-Modus (konsistent mit Validation)"""
+        self.model.eval()
+        all_preds = []
+        all_labels = []
+        
+        with torch.no_grad():
+            for events, labels in dataloader:
+                if events.ndim == 4:
+                    events = events.squeeze(2)
+                
+                events = events.to(self.device).float()
+                labels = labels.to(self.device)
+                
+                spk_rec, _ = self.model(events)
+                spike_sums = spk_rec.sum(dim=1)
+                preds = torch.argmax(spike_sums, dim=1)
+                
+                all_preds.extend(preds.cpu().numpy())
+                all_labels.extend(labels.cpu().numpy())
+        
+        accuracy = accuracy_score(all_labels, all_preds)
+        return accuracy
+    
+    def evaluate_train_set(self, dataloader: DataLoader):
+        """
+        Evaluiert das Modell auf dem Trainingsset im eval-Modus.
+        Dies gibt eine konsistente Train-Accuracy, die mit der Validation-Accuracy vergleichbar ist.
+        """
+        self.model.eval()
+        total_loss = 0
+        all_preds = []
+        all_labels = []
+        all_probs = []
+        
+        with torch.no_grad():
+            for events, labels in dataloader:
+                if events.ndim == 4:
+                    events = events.squeeze(2)
+                
+                events = events.to(self.device).float()
+                labels = labels.to(self.device)
+                
+                spk_rec, _ = self.model(events)
+                spike_sums = spk_rec.sum(dim=1)
+                
+                loss = self.loss_fn(spike_sums, labels)
+                total_loss += loss.item() * labels.size(0)
+                
+                probs = torch.softmax(spike_sums, dim=1)
+                preds = torch.argmax(spike_sums, dim=1)
+                
+                all_preds.extend(preds.cpu().numpy())
+                all_labels.extend(labels.cpu().numpy())
+                all_probs.extend(probs.cpu().numpy())
         
         total_samples = len(all_labels)
         avg_loss = total_loss / total_samples if total_samples > 0 else 0.0
+        all_labels = np.array(all_labels)
+        all_preds = np.array(all_preds)
+        
         accuracy = accuracy_score(all_labels, all_preds)
         
-        self.history['train_loss'].append(avg_loss)
-        self.history['train_accuracy'].append(accuracy)
-        
-        return avg_loss, accuracy
+        return {
+            'loss': avg_loss,
+            'accuracy': accuracy
+        }
     
     def evaluate(self, dataloader: DataLoader):
         self.model.eval()

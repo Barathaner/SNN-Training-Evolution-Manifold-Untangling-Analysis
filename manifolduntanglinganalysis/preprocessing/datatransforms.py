@@ -171,6 +171,48 @@ class GaussianSmoothing:
         return frames_smoothed
 
 
+class FixTimeBins:
+    """
+    Beschneidet oder paddet Frames auf eine exakte Anzahl von Zeitbins.
+    
+    Kompatibel mit tonic.transforms - arbeitet auf Frames (nach ToFrame).
+    
+    Args:
+        n_time_bins: Exakte Anzahl von Zeitbins (wird beschritten oder gepaddet)
+    """
+    def __init__(self, n_time_bins: int):
+        self.n_time_bins = n_time_bins
+    
+    def __call__(self, frames):
+        """
+        Args:
+            frames: numpy array mit Shape (n_time_bins, ...)
+        
+        Returns:
+            frames_fixed: Array mit exakt n_time_bins Zeitbins
+        """
+        if len(frames) == 0:
+            # Leere Frames: Erstelle leere Frames mit korrekter Shape
+            if frames.ndim >= 2:
+                shape = (self.n_time_bins,) + frames.shape[1:]
+                return np.zeros(shape, dtype=frames.dtype)
+            return frames
+        
+        current_time_bins = frames.shape[0]
+        
+        if current_time_bins == self.n_time_bins:
+            # Bereits korrekte Anzahl
+            return frames
+        elif current_time_bins > self.n_time_bins:
+            # Beschneide auf n_time_bins (nehme die ersten n_time_bins)
+            return frames[:self.n_time_bins]
+        else:
+            # Padde mit Nullen am Ende
+            padding_shape = (self.n_time_bins - current_time_bins,) + frames.shape[1:]
+            padding = np.zeros(padding_shape, dtype=frames.dtype)
+            return np.concatenate([frames, padding], axis=0)
+
+
 class TrimSilence:
     """
     Entfernt Stille am Anfang und Ende von Frames.
@@ -454,6 +496,7 @@ def get_preprocessing(n_time_bins=80, target_neurons=70, original_neurons=700,in
             end_time=fixed_duration,
             include_incomplete=True
         ),
+        FixTimeBins(n_time_bins=n_time_bins),
         GaussianSmoothing(sigma=gaussian_sigma)
     ]
     if include_trim_silence:

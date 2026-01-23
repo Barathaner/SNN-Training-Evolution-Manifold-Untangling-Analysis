@@ -1,10 +1,13 @@
 import torch.nn as nn
 import os
+import json
 import manifolduntanglinganalysis.preprocessing.datatransforms as datatransforms
 import manifolduntanglinganalysis.preprocessing.dataloader as dataloader
 from manifolduntanglinganalysis.training import Trainer
 import models.sffnn_batched as sffnn_batched
 from manifolduntanglinganalysis.ActivityMonitor import ActivityMonitor
+import manifolduntanglinganalysis.analysis.intrinsic_dimension as id_analysis
+#from manifolduntanglinganalysis.analysis.intrinsic_dimension import plot_intrinsic_dimensions_over_layers
 from manifolduntanglinganalysis.preprocessing.metadata_extractor import SHDMetadataExtractor
 from manifolduntanglinganalysis.metrics.mean_field_theoretic_manifold_analysis_wrapper import analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds, plot_manifold_metrics_over_epochs, analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds_rate_coded, plot_manifold_metrics_over_layer, plot_manifold_metrics_over_epochs_all_layer_in_one_plot
 import numpy as np
@@ -35,7 +38,7 @@ if __name__ == "__main__":
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
     data_path = os.path.join(project_root, "data", "input")
     transform = datatransforms.get_preprocessing(
-        n_time_bins=80,
+        n_time_bins=500,
         target_neurons=350,
         original_neurons=700,
         fixed_duration=958007.0
@@ -43,7 +46,7 @@ if __name__ == "__main__":
 
     # Data loading
     train_dataloader = dataloader.load_filtered_shd_dataloader(
-        label_range=range(0, 10),
+        label_range=range(0, 20),
         data_path=data_path,
         transform=transform, 
         train=True, 
@@ -51,7 +54,7 @@ if __name__ == "__main__":
     )
 
     test_dataloader = dataloader.load_filtered_shd_dataloader(
-        label_range=range(0, 10), 
+        label_range=range(0, 20), 
         data_path=data_path,
         transform=transform, 
         train=False,
@@ -63,17 +66,17 @@ if __name__ == "__main__":
     net = sffnn_batched.Net(
         num_inputs=350,      # Nach Downsample1D(0.5): 700 -> 350
         num_hidden1=128,     # Erstes Hidden Layer
-        num_hidden2=64,      # Zweites Hidden Layer (hierarchisch)
-        num_outputs=10, 
-        num_steps=80,      # 80 Zeitschritte (entspricht n_time_bins)
-        beta=0.9
+        num_hidden2=128,      # Zweites Hidden Layer (hierarchisch)
+        num_outputs=20, 
+        num_steps=500,      # 80 Zeitschritte (entspricht n_time_bins)
+        beta=0.5
     ).to(device)
 
 
     # Training Setup
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=5e-4)
-    num_epochs = 10
+    num_epochs = 20
     
     trainer = Trainer(net, optimizer, loss_fn, device, project_root=project_root)
     
@@ -123,6 +126,28 @@ if __name__ == "__main__":
     # Speichere Performance-Plots
     plot_path = trainer.save_plots()
     print(f"\n✅ Performance-Plots gespeichert: {plot_path}")
+    
+    # Speichere Performance-Metriken in JSON
+    results_dir = os.path.join(project_root, "data", "results")
+    os.makedirs(results_dir, exist_ok=True)
+    
+    # Konvertiere Trainer-History zu einem strukturierten Format
+    performance_metrics = {
+        'epochs': list(range(1, len(trainer.history['train_loss']) + 1)),
+        'train_loss': [float(x) for x in trainer.history['train_loss']],
+        'train_accuracy': [float(x) for x in trainer.history['train_accuracy']],
+        'val_loss': [float(x) for x in trainer.history['val_loss']],
+        'val_accuracy': [float(x) for x in trainer.history['val_accuracy']],
+        'val_precision': [float(x) for x in trainer.history['val_precision']],
+        'val_recall': [float(x) for x in trainer.history['val_recall']],
+        'val_f1': [float(x) for x in trainer.history['val_f1']],
+        'val_auc_roc': [float(x) for x in trainer.history['val_auc_roc']]
+    }
+    
+    performance_json_path = os.path.join(results_dir, "performance_metrics.json")
+    with open(performance_json_path, 'w') as f:
+        json.dump(performance_metrics, f, indent=2)
+    print(f"✅ Performance-Metriken gespeichert: {performance_json_path}")
 
     # Save the model
     model_export_path = os.path.join(project_root, "models", "model_export")
@@ -182,7 +207,7 @@ if __name__ == "__main__":
             num_neurons = int(f.attrs['num_features']) 
         
         # Erstelle Transform mit korrekter sensor_size (Format: (neurons, height, width))
-        activity_log_transform = datatransforms.get_activity_logpreprocessing(num_neurons=num_neurons,fixed_duration=80,n_time_bins=80)
+        activity_log_transform = datatransforms.get_activity_logpreprocessing(num_neurons=num_neurons,fixed_duration=500,n_time_bins=100)
         
         # Lade Activity Log mit Transform
         activity_log_dataloader = dataloader.load_activity_log(
@@ -204,13 +229,19 @@ if __name__ == "__main__":
         # else:
         current_result = analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds(
             dataloader=activity_log_dataloader,
-            labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-            max_samples_per_class=100,
+            labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19],
+            max_samples_per_class=64,
             kappa=0.0,
             n_t=200,
             n_reps=1,
             verbose=True
         )
+        #intrinsic dimension calculation with PCA 80% explained vairance and as comparison MLE
+        pca_intdim,fig=id_analysis.explained_variance_dimension(activity_log_dataloader,perc=0.90,plot_path=os.path.join(project_root,"plots","explained_variance_dimension.png"))
+        #mle_dim = id_analysis.mle_intrinsic_dimension(activity_log_dataloader)
+        print(f"PCA Intrinsic Dimension: {pca_intdim}")
+       # print(f"MLE Intrinsic Dimension: {mle_dim}")
+
 
         # 2. Auf die temporäre Variable zugreifen für den Print
         print(f"Capacity: {current_result['capacity']:.4f}")
@@ -226,14 +257,29 @@ if __name__ == "__main__":
             'capacity': float(current_result['capacity']),
             'radius': float(current_result['radius']),
             'dimension': float(current_result['dimension']),
-            'correlation': float(current_result['correlation'])
+            'correlation': float(current_result['correlation']),
+            'pca_intdim': float(pca_intdim),
+            #'mle_dim': float(mle_dim)
         }
         
         # Für plot_manifold_metrics_over_epochs die vollständigen Ergebnisse behalten
         results_list.append(current_result)
     
+    # Speichere die Ergebnisse in JSON-Dateien
+    import json
+    results_dir = os.path.join(project_root, "data", "results")
+    os.makedirs(results_dir, exist_ok=True)
+    
+    # Speichere results_all.json (wird für Plots benötigt)
+    results_json_path = os.path.join(results_dir, "results_all.json")
+    with open(results_json_path, 'w') as f:
+        json.dump(results, f, indent=2)
+    
+    # Speichere auch results.json (für Kompatibilität)
+    with open(os.path.join(results_dir, "results.json"), 'w') as f:
+        json.dump(results, f, indent=2)
+    
     # Erstelle Plots aus den berechneten Ergebnissen
-    results_json_path = os.path.join(project_root, "data", "results", "results_all.json")
     plot_manifold_metrics_over_epochs(results_json_path=results_json_path, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
     #plot_manifold_metrics_over_epochs(results_list, activity_logs, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
     plot_manifold_metrics_over_layer(results_json_path=results_json_path, input_data_metrics=results_input, save_dir= os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
@@ -246,10 +292,3 @@ if __name__ == "__main__":
     # plot_manifold_metrics_over_epochs(results_json_path=results_json_path, input_data_metrics=results_input, save_dir=os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
     # plot_manifold_metrics_over_layer(results_json_path=results_json_path, input_data_metrics=results_input, save_dir=os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
     # plot_manifold_metrics_over_epochs_all_layer_in_one_plot(results_json_path=results_json_path, input_data_metrics=results_input, save_dir=os.path.join(project_root, "plots"), figsize_per_subplot=(5, 4))
-    # save the results in a json file
-    import json
-    # Stelle sicher, dass das Verzeichnis existiert
-    results_dir = os.path.join(project_root, "data", "results")
-    os.makedirs(results_dir, exist_ok=True)
-    with open(os.path.join(results_dir, "results.json"), 'w') as f:
-        json.dump(results, f, indent=2)

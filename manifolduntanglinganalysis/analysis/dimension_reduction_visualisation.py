@@ -178,7 +178,7 @@ class DimensionReductionVisualizer:
                  n_neighbors: int = 15, min_dist: float = 0.1, 
                  random_state: int = 42, **kwargs):
         reducer = umap.UMAP(n_components=n_components, n_neighbors=n_neighbors,
-                           min_dist=min_dist, random_state=random_state, 
+                           min_dist=min_dist, random_state=random_state, verbose=True,
             low_memory=True,**kwargs)
         embedding = reducer.fit_transform(self.X)
         self.reductions[name] = (reducer, embedding)

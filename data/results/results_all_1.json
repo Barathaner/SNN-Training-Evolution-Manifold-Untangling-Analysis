@@ -1,0 +1,262 @@
+{
+  "1": {
+    "lif0": {
+      "capacity": 0.0076,
+      "radius": 1.7678,
+      "dimension": 171.2464,
+      "correlation": 0.6318
+    },
+    "lif1": {
+      "capacity": 0.0197,
+      "radius": 3.1742,
+      "dimension": 56.0914,
+      "correlation": 0.6591
+    },
+    "lif2": {
+      "capacity": 0.0443,
+      "radius": 12.4701,
+      "dimension": 22.1573,
+      "correlation": 0.6895
+    },
+    "lif3": {
+      "capacity": 0.1561,
+      "radius": 47.4441,
+      "dimension": 5.7961,
+      "correlation": 0.4937
+    }
+  },
+  "2": {
+    "lif0": {
+      "capacity": 0.0098,
+      "radius": 2.0988,
+      "dimension": 146.287,
+      "correlation": 0.5292
+    },
+    "lif1": {
+      "capacity": 0.0267,
+      "radius": 1.4684,
+      "dimension": 53.9601,
+      "correlation": 0.514
+    },
+    "lif2": {
+      "capacity": 0.0376,
+      "radius": 3.021,
+      "dimension": 29.5801,
+      "correlation": 0.5364
+    },
+    "lif3": {
+      "capacity": 0.1455,
+      "radius": 9.8969,
+      "dimension": 6.517,
+      "correlation": 0.4568
+    }
+  },
+  "3": {
+    "lif0": {
+      "capacity": 0.0109,
+      "radius": 2.4028,
+      "dimension": 138.0339,
+      "correlation": 0.5004
+    },
+    "lif1": {
+      "capacity": 0.0325,
+      "radius": 1.2414,
+      "dimension": 49.4516,
+      "correlation": 0.4583
+    },
+    "lif2": {
+      "capacity": 0.0318,
+      "radius": 3.1851,
+      "dimension": 34.8462,
+      "correlation": 0.4615
+    },
+    "lif3": {
+      "capacity": 0.1437,
+      "radius": 5.9342,
+      "dimension": 6.9155,
+      "correlation": 0.4079
+    }
+  },
+  "4": {
+    "lif0": {
+      "capacity": 0.0106,
+      "radius": 2.2243,
+      "dimension": 144.2614,
+      "correlation": 0.4948
+    },
+    "lif1": {
+      "capacity": 0.0347,
+      "radius": 1.1788,
+      "dimension": 48.4092,
+      "correlation": 0.4393
+    },
+    "lif2": {
+      "capacity": 0.032,
+      "radius": 2.559,
+      "dimension": 36.103,
+      "correlation": 0.4399
+    },
+    "lif3": {
+      "capacity": 0.1468,
+      "radius": 5.753,
+      "dimension": 6.7533,
+      "correlation": 0.4056
+    }
+  },
+  "5": {
+    "lif0": {
+      "capacity": 0.0171,
+      "radius": 1.0195,
+      "dimension": 110.4123,
+      "correlation": 0.49
+    },
+    "lif1": {
+      "capacity": 0.0261,
+      "radius": 1.3552,
+      "dimension": 58.0564,
+      "correlation": 0.4274
+    },
+    "lif2": {
+      "capacity": 0.0365,
+      "radius": 5.5333,
+      "dimension": 35.0209,
+      "correlation": 0.4131
+    },
+    "lif3": {
+      "capacity": 0.1451,
+      "radius": 5.4119,
+      "dimension": 6.747,
+      "correlation": 0.3882
+    }
+  },
+  "6": {
+    "lif0": {
+      "capacity": 0.0106,
+      "radius": 1.683,
+      "dimension": 149.6459,
+      "correlation": 0.4893
+    },
+    "lif1": {
+      "capacity": 0.0249,
+      "radius": 1.3831,
+      "dimension": 60.4899,
+      "correlation": 0.4166
+    },
+    "lif2": {
+      "capacity": 0.0298,
+      "radius": 2.8043,
+      "dimension": 38.7179,
+      "correlation": 0.3973
+    },
+    "lif3": {
+      "capacity": 0.1502,
+      "radius": 5.5616,
+      "dimension": 6.6989,
+      "correlation": 0.3902
+    }
+  },
+  "7": {
+    "lif0": {
+      "capacity": 0.0163,
+      "radius": 1.0152,
+      "dimension": 116.3521,
+      "correlation": 0.4826
+    },
+    "lif1": {
+      "capacity": 0.0241,
+      "radius": 1.372,
+      "dimension": 62.9394,
+      "correlation": 0.4055
+    },
+    "lif2": {
+      "capacity": 0.0309,
+      "radius": 2.8277,
+      "dimension": 37.9724,
+      "correlation": 0.3862
+    },
+    "lif3": {
+      "capacity": 0.1454,
+      "radius": 5.4811,
+      "dimension": 6.7542,
+      "correlation": 0.3842
+    }
+  },
+  "8": {
+    "lif0": {
+      "capacity": 0.0129,
+      "radius": 1.0809,
+      "dimension": 140.119,
+      "correlation": 0.4797
+    },
+    "lif1": {
+      "capacity": 0.0287,
+      "radius": 1.1762,
+      "dimension": 58.3702,
+      "correlation": 0.399
+    },
+    "lif2": {
+      "capacity": 0.0373,
+      "radius": 4.3085,
+      "dimension": 35.7902,
+      "correlation": 0.3759
+    },
+    "lif3": {
+      "capacity": 0.1458,
+      "radius": 5.8945,
+      "dimension": 6.7685,
+      "correlation": 0.3863
+    }
+  },
+  "9": {
+    "lif0": {
+      "capacity": 0.0128,
+      "radius": 1.079,
+      "dimension": 140.7324,
+      "correlation": 0.4785
+    },
+    "lif1": {
+      "capacity": 0.0228,
+      "radius": 1.4342,
+      "dimension": 66.0274,
+      "correlation": 0.3955
+    },
+    "lif2": {
+      "capacity": 0.0332,
+      "radius": 2.0432,
+      "dimension": 38.2926,
+      "correlation": 0.3717
+    },
+    "lif3": {
+      "capacity": 0.1438,
+      "radius": 5.0318,
+      "dimension": 6.7831,
+      "correlation": 0.3865
+    }
+  },
+  "10": {
+    "lif0": {
+      "capacity": 0.0102,
+      "radius": 1.4515,
+      "dimension": 153.8528,
+      "correlation": 0.4765
+    },
+    "lif1": {
+      "capacity": 0.0216,
+      "radius": 2.6585,
+      "dimension": 67.5276,
+      "correlation": 0.3899
+    },
+    "lif2": {
+      "capacity": 0.0373,
+      "radius": 1.8689,
+      "dimension": 36.8869,
+      "correlation": 0.3614
+    },
+    "lif3": {
+      "capacity": 0.1464,
+      "radius": 6.0168,
+      "dimension": 6.7736,
+      "correlation": 0.3856
+    }
+  }
+}

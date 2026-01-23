@@ -188,4 +188,3 @@ def twonn_intrinsic_dimension(dataloader: DataLoader,
     print(f"✅ Two-NN geschätzte Dimension: {dim:.2f}")
     return dim
 
-

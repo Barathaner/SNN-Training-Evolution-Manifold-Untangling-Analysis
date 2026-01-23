@@ -7,12 +7,12 @@ class Net(nn.Module):
         super().__init__()
 
         # Layer 0: Input -> Hidden0 (gleiche Größe wie Input)
-        self.fc0 = nn.Linear(num_inputs, num_inputs)
+        self.fc0 = nn.Linear(num_inputs, 128)
         self.lif0 = snn.Leaky(beta=beta)
         
         # Erste Hidden Layer: Hidden0 -> Hidden1
-        self.fc1 = nn.Linear(num_inputs, num_hidden1)
-        self.lif1 = snn.RLeaky(beta=beta)
+        self.fc1 = nn.Linear(128, num_hidden1)
+        self.lif1 = snn.Leaky(beta=beta)
         
         # Zweite Hidden Layer: Hidden1 -> Hidden2 (hierarchisch)
         self.fc2 = nn.Linear(num_hidden1, num_hidden2)
