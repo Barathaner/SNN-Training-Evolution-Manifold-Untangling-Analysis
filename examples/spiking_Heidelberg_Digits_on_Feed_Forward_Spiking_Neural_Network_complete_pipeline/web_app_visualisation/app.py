@@ -15,8 +15,9 @@ from pathlib import Path
 app = dash.Dash(__name__)
 
 # Verfügbare CSV-Dateien finden
-data_dir = Path(__file__).parent.parent.parent / "data"
-manifold_dir = Path(__file__).parent.parent.parent / "manifold_embeddings"
+project_root = Path(__file__).resolve().parents[3]
+data_dir = project_root / "data" / "embeddings_for_webvisualisation_with_metadat"
+manifold_dir = project_root / "manifold_embeddings"
 
 # Suche in beiden Verzeichnissen
 csv_files = list(data_dir.glob("embeddings_*.csv"))

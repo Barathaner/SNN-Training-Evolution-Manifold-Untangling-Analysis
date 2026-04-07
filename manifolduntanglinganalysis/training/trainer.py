@@ -254,6 +254,7 @@ class Trainer:
         
         plt.tight_layout()
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.show()
         plt.close()
         
         return str(save_path)
