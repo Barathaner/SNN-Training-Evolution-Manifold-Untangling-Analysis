@@ -181,6 +181,167 @@ def analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds(
     return results
 
 
+def _mftma_timestep_degenerate(X: List[np.ndarray], min_var: float = 1e-12, min_sv_centers: float = 1e-8) -> bool:
+    """
+    Prüft, ob die Daten für einen Zeitschritt für MFTMA degeneriert sind (führt sonst zu Division durch null).
+    True = überspringen und NaN setzen.
+    """
+    if len(X) < 2:
+        return True
+    # Pro Klasse: mindestens 2 Punkte und nicht konstant
+    for x in X:
+        if x.shape[1] < 2:
+            return True
+        if np.var(x) < min_var:
+            return True
+    # Zentren der Klassen: (n_neurons, n_classes); wenn alle gleich oder rangdefekt → degeneriert
+    centers = np.stack([np.mean(x, axis=1) for x in X], axis=1)
+    center_mean = np.mean(centers, axis=1, keepdims=True)
+    centered = centers - center_mean
+    ss = np.linalg.svd(centered, compute_uv=False)
+    if len(ss) == 0 or np.min(ss) < min_sv_centers:
+        return True
+    return False
+
+
+def analyze_manifold_metrics_per_timestep(
+    dataloader,
+    labels: List[int],
+    max_samples_per_class: int = 100,
+    kappa: float = 0.0,
+    n_t: int = 200,
+    n_reps: int = 1,
+    verbose: bool = True
+) -> Dict[str, Union[float, np.ndarray, list]]:
+    """
+    Führt MFTMA für jeden Zeitschritt getrennt durch (ein Punkt pro Sample pro Klasse pro t).
+    Geeignet für Plots „Metrik über Timestep“ (wie in Chung et al. / Librispeech Figure 6).
+
+    Args:
+        dataloader: Wie bei analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds
+        labels: Liste der Klassen-Labels
+        max_samples_per_class: Max. Samples pro Klasse
+        kappa, n_t, n_reps: MFTMA-Parameter
+        verbose: Fortschritt ausgeben
+
+    Returns:
+        Dict mit:
+            - 'capacity': Liste/Array Länge T (harmonic mean über Klassen pro t)
+            - 'radius': Liste/Array Länge T
+            - 'dimension': Liste/Array Länge T
+            - 'correlation': Liste/Array Länge T (center correlation)
+            - 'timesteps': [0, 1, ..., T-1]
+            - 'n_timesteps': T
+    """
+    if len(labels) < 2:
+        raise ValueError(f"Mindestens 2 Labels benötigt, nur {len(labels)} gegeben")
+
+    # Pro Klasse: Liste von (T, n_neurons) – ein Array pro Sample
+    class_trajectories = {label: [] for label in labels}
+    n_neurons = None
+    T = None
+
+    for batch_data, batch_labels in dataloader:
+        batch_labels_np = batch_labels.numpy() if hasattr(batch_labels, 'numpy') else np.array(batch_labels)
+        batch_data_np = batch_data.numpy() if hasattr(batch_data, 'numpy') else np.array(batch_data)
+
+        for i, lbl in enumerate(batch_labels_np):
+            if lbl not in class_trajectories:
+                continue
+            if len(class_trajectories[lbl]) >= max_samples_per_class:
+                continue
+
+            frames = batch_data_np[i]
+            if frames.ndim == 3:
+                vec = np.asarray(frames[:, 0, :], dtype=np.float64)
+            elif frames.ndim == 2:
+                vec = np.asarray(frames, dtype=np.float64)
+            else:
+                raise ValueError(f"Unerwartete Frame-Shape: {frames.shape}")
+
+            if n_neurons is None:
+                n_neurons = vec.shape[1]
+            if T is None:
+                T = vec.shape[0]
+            class_trajectories[lbl].append(vec)
+
+    if T is None or n_neurons is None:
+        raise ValueError("Keine Daten aus dem Dataloader")
+
+    # Vor der Berechnung: Zeitbins entfernen, bei denen über alle Samples nur 0 vorkommt
+    valid_timesteps = []
+    for t in range(T):
+        all_vals = []
+        for label in labels:
+            for traj in class_trajectories[label]:
+                if t < traj.shape[0]:
+                    all_vals.append(traj[t, :])
+        if not all_vals:
+            continue
+        arr = np.concatenate([v.reshape(1, -1) for v in all_vals], axis=0)
+        if np.max(np.abs(arr)) >= 1e-12:
+            valid_timesteps.append(t)
+    n_dropped = T - len(valid_timesteps)
+    if verbose and n_dropped > 0:
+        print(f"  {n_dropped} von {T} Zeitschritte mit nur Nullen entfernt, {len(valid_timesteps)} verbleiben.")
+
+    capacity_per_t = []
+    radius_per_t = []
+    dimension_per_t = []
+    correlation_per_t = []
+
+    for t in valid_timesteps:
+        X_by_class = []
+        for label in labels:
+            samples_at_t = []
+            for traj in class_trajectories[label]:
+                if t < traj.shape[0]:
+                    samples_at_t.append(traj[t, :])
+            if len(samples_at_t) > 0:
+                X_by_class.append(np.array(samples_at_t).T)
+            else:
+                X_by_class.append(np.zeros((n_neurons, 0)))
+
+        X = [x for x in X_by_class if x.shape[1] > 0]
+        if len(X) < 2:
+            capacity_per_t.append(np.nan)
+            radius_per_t.append(np.nan)
+            dimension_per_t.append(np.nan)
+            correlation_per_t.append(np.nan)
+            if verbose and t == valid_timesteps[0]:
+                print(f"  Timestep {t}: < 2 Klassen mit Daten, setze NaN")
+            continue
+
+        try:
+            cap, rad, dim, res_coeff0, _ = manifold_analysis_corr(X, kappa, n_t, n_reps=n_reps)
+            avg_cap = float(1.0 / np.mean(1.0 / np.maximum(cap, 1e-12)))
+            avg_rad = float(np.mean(rad))
+            avg_dim = float(np.mean(dim))
+            capacity_per_t.append(avg_cap)
+            radius_per_t.append(avg_rad)
+            dimension_per_t.append(avg_dim)
+            correlation_per_t.append(float(res_coeff0))
+        except Exception as e:
+            if verbose:
+                print(f"  Timestep {t}: MFTMA fehlgeschlagen: {type(e).__name__}: {e}")
+            capacity_per_t.append(np.nan)
+            radius_per_t.append(np.nan)
+            dimension_per_t.append(np.nan)
+            correlation_per_t.append(np.nan)
+
+        if verbose and (len(capacity_per_t) % max(1, len(valid_timesteps) // 10) == 0) and len(capacity_per_t) > 0:
+            print(f"  {len(capacity_per_t)}/{len(valid_timesteps)} Zeitschritte verarbeitet …")
+
+    return {
+        'capacity': capacity_per_t,
+        'radius': radius_per_t,
+        'dimension': dimension_per_t,
+        'correlation': correlation_per_t,
+        'timesteps': valid_timesteps,
+        'n_timesteps': len(valid_timesteps),
+    }
+
+
 def analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds_rate_coded(
     dataloader,
     labels: List[int],

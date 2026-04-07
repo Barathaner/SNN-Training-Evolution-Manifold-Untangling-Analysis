@@ -1,0 +1,295 @@
+{
+  "time_bin_us": 11975.0875,
+  "num_channels": 700,
+  "num_classes": 20,
+  "train": {
+    "split": "train",
+    "n_samples_total": 8156,
+    "n_samples_used": 8156,
+    "spike_counts_sparsity": {
+      "min": 2410,
+      "max": 14917,
+      "mean": 7846.197645904856,
+      "std": 2477.9008846577563
+    },
+    "temporal_duration_ms": {
+      "min": 233.398,
+      "max": 1369.14,
+      "mean": 715.5962618930848
+    },
+    "channel_utilization": {
+      "channels_used_per_sample_min": 388,
+      "channels_used_per_sample_max": 680,
+      "channels_used_per_sample_mean": 564.8441638057872,
+      "channels_used_per_sample_std": 41.89380144875848,
+      "channel_spike_counts_min": 4700,
+      "channel_spike_counts_max": 263009,
+      "channel_spike_counts_mean": 91419.41142857143,
+      "channel_spike_counts_std": 87602.7453912874,
+      "channels_with_at_least_one_spike": 700
+    },
+    "global_firing_rate": {
+      "spikes_per_second": 10964.55929653402,
+      "spikes_per_time_bin": 131.301556974934
+    },
+    "class_balance": {
+      "per_class_counts": [
+        406,
+        401,
+        404,
+        407,
+        393,
+        399,
+        400,
+        400,
+        395,
+        406,
+        411,
+        412,
+        412,
+        413,
+        418,
+        421,
+        415,
+        412,
+        410,
+        421
+      ],
+      "min_count": 393,
+      "max_count": 421,
+      "mean_count": 407.8,
+      "std_count": 7.903163923391695,
+      "is_balanced": false
+    },
+    "quality_control": {
+      "empty_samples_count": 0,
+      "empty_samples_ratio": 0.0,
+      "dead_samples_count": 0,
+      "dead_samples_ratio": 0.0,
+      "dead_threshold_spikes": 10
+    },
+    "temporal_concentration": {
+      "global_ms": {
+        "min": 41.94976659730312,
+        "max": 264.3328589624051,
+        "mean": 114.44619981965366,
+        "std": 25.850156154419494,
+        "n_samples_with_ge2_spikes": 8156
+      },
+      "per_class_mean_ms": [
+        144.1300408139775,
+        121.15180447114625,
+        95.71556984675847,
+        108.21400712410491,
+        110.2303844361761,
+        108.86956593805809,
+        88.72062817521328,
+        131.35637797869694,
+        87.6781035685022,
+        133.53079660858495,
+        120.19838135753423,
+        125.67445893642753,
+        117.01725885977575,
+        126.15634794886071,
+        103.2737148316146,
+        87.85473233194851,
+        107.19060201034384,
+        148.9237843874408,
+        101.8426829586257,
+        120.50152366270153
+      ]
+    },
+    "samples_per_speaker": {
+      "speaker_ids": [
+        0,
+        1,
+        2,
+        3,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "counts": [
+        913,
+        903,
+        998,
+        722,
+        447,
+        770,
+        789,
+        827,
+        789,
+        998
+      ],
+      "min": 447,
+      "max": 998,
+      "mean": 815.6,
+      "std": 152.2880166001252,
+      "n_speakers": 10
+    },
+    "correlation_spike_count_duration": {
+      "pearson_r": 0.4900930427638236,
+      "pearson_p": 0.0,
+      "spearman_r": 0.46563728126588294,
+      "spearman_p": 0.0,
+      "n_samples_used": 8156
+    },
+    "entropy_spike_count_distribution": 8.491688293682717,
+    "temporal_duration_time_bins": {
+      "time_bin_us": 11975.0875,
+      "min": 19.490295999924843,
+      "max": 114.33235874059376,
+      "mean": 59.75708001240783
+    }
+  },
+  "test": {
+    "split": "test",
+    "n_samples_total": 2264,
+    "n_samples_used": 2264,
+    "spike_counts_sparsity": {
+      "min": 2472,
+      "max": 16257,
+      "mean": 8229.444346289753,
+      "std": 2255.19112085923
+    },
+    "temporal_duration_ms": {
+      "min": 315.917,
+      "max": 1169.921,
+      "mean": 711.932590106007
+    },
+    "channel_utilization": {
+      "channels_used_per_sample_min": 460,
+      "channels_used_per_sample_max": 669,
+      "channels_used_per_sample_mean": 570.2469081272085,
+      "channels_used_per_sample_std": 39.18430097292974,
+      "channel_spike_counts_min": 1271,
+      "channel_spike_counts_max": 79743,
+      "channel_spike_counts_mean": 26616.374285714286,
+      "channel_spike_counts_std": 25879.104892776697,
+      "channels_with_at_least_one_spike": 700
+    },
+    "global_firing_rate": {
+      "spikes_per_second": 11559.302749526385,
+      "spikes_per_time_bin": 138.42366186456806
+    },
+    "class_balance": {
+      "per_class_counts": [
+        103,
+        108,
+        105,
+        102,
+        116,
+        110,
+        109,
+        109,
+        114,
+        103,
+        122,
+        121,
+        121,
+        120,
+        115,
+        112,
+        118,
+        121,
+        123,
+        112
+      ],
+      "min_count": 102,
+      "max_count": 123,
+      "mean_count": 113.2,
+      "std_count": 6.757218362610462,
+      "is_balanced": false
+    },
+    "quality_control": {
+      "empty_samples_count": 0,
+      "empty_samples_ratio": 0.0,
+      "dead_samples_count": 0,
+      "dead_samples_ratio": 0.0,
+      "dead_threshold_spikes": 10
+    },
+    "temporal_concentration": {
+      "global_ms": {
+        "min": 56.14186449505149,
+        "max": 209.72812821589613,
+        "mean": 118.46398576725691,
+        "std": 27.87731132649522,
+        "n_samples_with_ge2_spikes": 2264
+      },
+      "per_class_mean_ms": [
+        167.64918320785927,
+        133.19133717159204,
+        103.62969559967668,
+        115.51199796621256,
+        117.88243173594724,
+        110.486161621513,
+        95.00787792562454,
+        146.37647184903375,
+        95.46648904381993,
+        141.26532875946702,
+        119.27603123119877,
+        115.77671927886168,
+        118.60353239572973,
+        138.5684734587422,
+        98.62331701965289,
+        80.3939019285116,
+        100.21604664053869,
+        158.54364412121848,
+        91.17466895220387,
+        126.82936418488825
+      ]
+    },
+    "samples_per_speaker": {
+      "speaker_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "counts": [
+        47,
+        47,
+        52,
+        38,
+        900,
+        940,
+        23,
+        40,
+        41,
+        43,
+        41,
+        52
+      ],
+      "min": 23,
+      "max": 940,
+      "mean": 188.66666666666666,
+      "std": 327.24464175224557,
+      "n_speakers": 12
+    },
+    "correlation_spike_count_duration": {
+      "pearson_r": 0.5524014600754378,
+      "pearson_p": 4.5983617047509976e-181,
+      "spearman_r": 0.555955912501422,
+      "spearman_p": 7.362398172714306e-184,
+      "n_samples_used": 2264
+    },
+    "entropy_spike_count_distribution": 7.547210427428881,
+    "temporal_duration_time_bins": {
+      "time_bin_us": 11975.0875,
+      "min": 26.38118510616311,
+      "max": 97.69623812769636,
+      "mean": 59.45113888362045
+    }
+  }
+}

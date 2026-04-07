@@ -438,7 +438,9 @@ def get_activity_logpreprocessing(num_neurons, n_time_bins=80,
         # Normalisiere Frame-Shape auf feste Anzahl von Neuronen
         # (wichtig: ToFrame kann unterschiedliche Neuronenzahlen erzeugen)
         NormalizeFrameShape(num_neurons=num_neurons),
-        GaussianSmoothing(sigma=gaussian_sigma)
+        GaussianSmoothing(sigma=gaussian_sigma),
+        # Exakt n_time_bins erzwingen (ToFrame kann mit include_incomplete ein Bin mehr liefern)
+        FixTimeBins(n_time_bins=n_time_bins),
     ]
     
     # TrimSilence nur hinzufügen, wenn explizit gewünscht

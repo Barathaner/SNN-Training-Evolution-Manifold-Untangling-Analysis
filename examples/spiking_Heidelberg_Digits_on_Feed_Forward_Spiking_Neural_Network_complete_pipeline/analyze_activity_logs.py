@@ -118,7 +118,7 @@ def analyze_activity_logs(
         activity_log_transform = datatransforms.get_activity_logpreprocessing(
             num_neurons=num_neurons,
             fixed_duration=80,
-            n_time_bins=10
+            n_time_bins=1
         )
         
         # Lade Activity Log mit Transform

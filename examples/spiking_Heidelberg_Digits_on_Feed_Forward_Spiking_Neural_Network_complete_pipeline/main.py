@@ -38,7 +38,7 @@ if __name__ == "__main__":
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
     data_path = os.path.join(project_root, "data", "input")
     transform = datatransforms.get_preprocessing(
-        n_time_bins=500,
+        n_time_bins=80,
         target_neurons=350,
         original_neurons=700,
         fixed_duration=958007.0
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     # Data loading
     train_dataloader = dataloader.load_filtered_shd_dataloader(
-        label_range=range(0, 20),
+        label_range=range(0, 10),
         data_path=data_path,
         transform=transform, 
         train=True, 
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     )
 
     test_dataloader = dataloader.load_filtered_shd_dataloader(
-        label_range=range(0, 20), 
+        label_range=range(0, 10), 
         data_path=data_path,
         transform=transform, 
         train=False,
@@ -66,17 +66,17 @@ if __name__ == "__main__":
     net = sffnn_batched.Net(
         num_inputs=350,      # Nach Downsample1D(0.5): 700 -> 350
         num_hidden1=128,     # Erstes Hidden Layer
-        num_hidden2=128,      # Zweites Hidden Layer (hierarchisch)
-        num_outputs=20, 
-        num_steps=500,      # 80 Zeitschritte (entspricht n_time_bins)
-        beta=0.5
+        num_hidden2=64,      # Zweites Hidden Layer (hierarchisch)
+        num_outputs=10, 
+        num_steps=80,      # 80 Zeitschritte (entspricht n_time_bins)
+        beta=0.9
     ).to(device)
 
 
     # Training Setup
     loss_fn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=5e-4)
-    num_epochs = 20
+    num_epochs = 10
     
     trainer = Trainer(net, optimizer, loss_fn, device, project_root=project_root)
     
@@ -207,7 +207,7 @@ if __name__ == "__main__":
             num_neurons = int(f.attrs['num_features']) 
         
         # Erstelle Transform mit korrekter sensor_size (Format: (neurons, height, width))
-        activity_log_transform = datatransforms.get_activity_logpreprocessing(num_neurons=num_neurons,fixed_duration=500,n_time_bins=100)
+        activity_log_transform = datatransforms.get_activity_logpreprocessing(num_neurons=num_neurons,fixed_duration=80,n_time_bins=10)
         
         # Lade Activity Log mit Transform
         activity_log_dataloader = dataloader.load_activity_log(
@@ -229,7 +229,7 @@ if __name__ == "__main__":
         # else:
         current_result = analyze_manifold_capacity_and_mftma_metrics_of_class_manifolds(
             dataloader=activity_log_dataloader,
-            labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19],
+            labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
             max_samples_per_class=64,
             kappa=0.0,
             n_t=200,

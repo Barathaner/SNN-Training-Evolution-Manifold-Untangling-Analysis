@@ -12,6 +12,8 @@ import matplotlib.colors as mcolors
 import umap
 import torch
 from torch.utils.data import DataLoader
+from pathlib import Path
+from collections import defaultdict
 import manifolduntanglinganalysis.preprocessing.datatransforms as datatransforms
 import manifolduntanglinganalysis.preprocessing.dataloader as dataloader
 from manifolduntanglinganalysis.preprocessing.dataloader import H5Dataset, TransformedDataset
@@ -63,6 +65,22 @@ def get_high_contrast_colormap(n_colors=20):
     return mcolors.ListedColormap(base_colors[:n_colors])
 
 
+def get_speaker_high_contrast_colors(n_colors):
+    """
+    Maximally distinct colors for speakers (keine ähnlichen Blautöne).
+    Gleichmäßig über den Farbkreis (HSV-Hue) verteilt, hohe Sättigung.
+    """
+    import colorsys
+    colors = []
+    for i in range(n_colors):
+        hue = (i * 0.618033988749895) % 1.0  # Golden ratio für gute Verteilung
+        saturation = 0.85
+        value = 0.9
+        rgb = colorsys.hsv_to_rgb(hue, saturation, value)
+        colors.append(mcolors.rgb2hex(rgb))
+    return mcolors.ListedColormap(colors[:n_colors])
+
+
 def sort_key(filename):
     """Sortiere Activity Logs nach Epoche und Layer."""
     match = re.match(r'epoch_(\d+)_(\w+)_spk_events\.h5', filename)
@@ -73,7 +91,83 @@ def sort_key(filename):
     return (999, 'zzz')
 
 
-def create_umap_embedding(dataloader, n_neighbors=30, min_dist=0.5, random_state=42, max_samples_per_class=None):
+def load_speaker_gender_from_activity_log_h5(activity_log_path, project_root=None):
+    """
+    Liest Speaker-IDs (und optional Gender) direkt aus der Activity-Log-H5.
+    Die Activity Logs speichern bei include_metadata=True pro Sample Metadaten
+    (z. B. metadata/sample_0.attrs['speakers']).
+    Returns:
+        speaker_ids: (N,) int, N = Anzahl Samples in der H5; oder None falls nicht vorhanden.
+        genders: (N,) str, sofern project_root für SHD-Gender-Lookup angegeben; sonst None.
+    """
+    try:
+        with h5py.File(activity_log_path, 'r') as f:
+            if 'metadata' not in f:
+                return None, None
+            meta = f['metadata']
+            sample_keys = sorted([k for k in meta.keys() if k.startswith('sample_')],
+                                key=lambda x: int(x.split('_')[1]) if '_' in x else 0)
+            if not sample_keys:
+                return None, None
+            speaker_ids = []
+            for k in sample_keys:
+                grp = meta[k]
+                # ActivityMonitor speichert pro Sample z. B. 'speakers' (vom SHDMetadataExtractor)
+                sid = grp.attrs.get('speakers', grp.attrs.get('speaker', None))
+                if sid is None:
+                    return None, None
+                speaker_ids.append(int(sid))
+            speaker_ids = np.array(speaker_ids)
+    except Exception:
+        return None, None
+    # Gender: aus SHD extra/meta_info/gender (Index = Speaker-ID)
+    genders = None
+    if project_root:
+        data_path = os.path.join(project_root, "data", "input")
+        for h5_path in [Path(data_path) / "SHD" / "shd_train.h5", Path(data_path) / "shd_train.h5"]:
+            if not h5_path.is_file():
+                continue
+            try:
+                with h5py.File(h5_path, 'r') as f:
+                    gender_raw = f["extra"]["meta_info"]["gender"][:]
+                speaker_genders = [g.decode("utf-8") if hasattr(g, "decode") else str(g) for g in gender_raw]
+                genders = np.array([speaker_genders[int(sid)] for sid in speaker_ids])
+                break
+            except Exception:
+                continue
+    return speaker_ids, genders
+
+
+def load_speaker_gender_for_shd_order(project_root, max_sample_index_plus_one, label_range=None):
+    """
+    Fallback: Lädt Speaker/Gender aus SHD-H5 in Trainings-Reihenfolge (wenn Activity-Log keine Metadaten hat).
+    """
+    if label_range is None:
+        label_range = list(range(10))
+    label_set = set(label_range)
+    data_path = os.path.join(project_root, "data", "input")
+    base = Path(data_path)
+    for h5_path in [base / "SHD" / "shd_train.h5", base / "shd_train.h5", Path(project_root) / "data" / "input" / "shd_train.h5"]:
+        if not h5_path.is_file():
+            continue
+        try:
+            with h5py.File(h5_path, "r") as f:
+                all_speakers = f["extra"]["speaker"][:]
+                gender_raw = f["extra"]["meta_info"]["gender"][:]
+                labels = f["labels"][:]
+            speaker_genders = [g.decode("utf-8") if hasattr(g, "decode") else str(g) for g in gender_raw]
+            filtered_indices = np.array([i for i in range(len(labels)) if int(labels[i]) in label_set])
+            indices = filtered_indices[:max_sample_index_plus_one]
+            speaker_ids = all_speakers[indices]
+            genders = np.array([speaker_genders[int(sid)] for sid in speaker_ids])
+            return speaker_ids, genders
+        except Exception:
+            continue
+    return None, None
+
+
+def create_umap_embedding(dataloader, n_neighbors=20, min_dist=0.25, random_state=42, max_samples_per_class=None,
+                          speaker_ids=None, min_samples_per_speaker=5):
     """
     Erstellt UMAP-Embedding für einen DataLoader.
     
@@ -82,229 +176,260 @@ def create_umap_embedding(dataloader, n_neighbors=30, min_dist=0.5, random_state
         n_neighbors: Anzahl Nachbarn für UMAP
         min_dist: Mindestabstand für UMAP
         random_state: Random Seed
-        max_samples_per_class: Maximale Anzahl Samples pro Klasse (None = alle)
-                              Filtert auf Sample-Ebene, behält alle Zeitbins pro Sample
+        max_samples_per_class: Max. Samples pro Klasse (bei speaker_ids=None) bzw. max. Samples pro Speaker (bei speaker-balanced).
+        speaker_ids: Optional (N,) Speaker-ID pro Sample in Dataloader-Reihenfolge; für speaker-balanced Sampling.
+        min_samples_per_speaker: Nur Speaker mit mindestens so vielen Samples (nur bei speaker-balanced).
     
     Returns:
-        embedding: UMAP-Embedding (N, 2 oder 3)
-        labels: Labels für jeden Datenpunkt
+        embedding, labels, sample_indices, time_bin_indices, original_sample_indices
     """
     # Sammle Daten und Labels auf Sample-Ebene (bevor Trajektorien geflacht werden)
     all_data = []
-    all_labels = []
-    all_sample_labels = []  # Label für jedes Sample
+    all_sample_labels = []
+    all_original_indices = []  # Index in der H5-Datei (sample_0, sample_1, ...)
     
     np.random.seed(random_state)
-    
+    global_idx = 0
     for events, labels in dataloader:
         if events.ndim == 4:
             events = events.squeeze(2)
-        
         events_np = events.numpy() if isinstance(events, torch.Tensor) else events
         labels_np = labels.numpy() if isinstance(labels, torch.Tensor) else labels
-        
         batch_size, T, features = events_np.shape
-        
-        # Speichere jedes Sample separat mit seinem Label
         for i in range(batch_size):
-            all_data.append(events_np[i])  # Shape: (T, features)
+            all_data.append(events_np[i])
             all_sample_labels.append(labels_np[i])
+            all_original_indices.append(global_idx)
+            global_idx += 1
     
-    # Filtere auf max_samples_per_class pro Klasse (auf Sample-Ebene)
+    # Sampling: speaker-balanced (min 5 pro Speaker, max max_samples_per_class pro Speaker) oder pro Klasse
     if max_samples_per_class is not None:
-        unique_labels = np.unique(all_sample_labels)
-        selected_sample_indices = []
-        
-        for label in unique_labels:
-            label_sample_indices = [i for i, lbl in enumerate(all_sample_labels) if lbl == label]
-            if len(label_sample_indices) > max_samples_per_class:
-                # Zufällig max_samples_per_class Samples auswählen
-                selected_label_indices = np.random.choice(
-                    label_sample_indices, 
-                    size=max_samples_per_class, 
-                    replace=False
-                )
-                selected_sample_indices.extend(selected_label_indices)
-            else:
-                selected_sample_indices.extend(label_sample_indices)
-        
-        # Wähle nur die ausgewählten Samples
-        all_data = [all_data[i] for i in selected_sample_indices]
-        all_sample_labels = [all_sample_labels[i] for i in selected_sample_indices]
-        
-        print(f"      Gefiltert: {len(selected_sample_indices)} Samples ({max_samples_per_class} pro Klasse)")
+        if speaker_ids is not None and len(speaker_ids) > 0:
+            # Speaker-balanced: mind. min_samples_per_speaker, max. max_samples_per_class pro Speaker
+            all_speaker_ids = np.array(
+                [speaker_ids[i] if i < len(speaker_ids) else -1 for i in all_original_indices],
+                dtype=np.int64
+            )
+            by_speaker = defaultdict(list)
+            for i in range(len(all_original_indices)):
+                by_speaker[all_speaker_ids[i]].append(i)
+            selected_sample_indices = []
+            for sid, indices in by_speaker.items():
+                if len(indices) >= min_samples_per_speaker:
+                    take = min(len(indices), max_samples_per_class)
+                    chosen = np.random.choice(indices, size=take, replace=False)
+                    selected_sample_indices.extend(chosen)
+            selected_sample_indices = sorted(selected_sample_indices)
+            all_data = [all_data[i] for i in selected_sample_indices]
+            all_sample_labels = [all_sample_labels[i] for i in selected_sample_indices]
+            all_original_indices = [all_original_indices[i] for i in selected_sample_indices]
+            n_speakers = sum(1 for indices in by_speaker.values() if len(indices) >= min_samples_per_speaker)
+            print(f"      Speaker-balanced: min {min_samples_per_speaker}, max {max_samples_per_class} pro Speaker → {len(selected_sample_indices)} Samples ({n_speakers} Speaker)")
+        else:
+            # Fallback: genau max_samples_per_class Samples pro Klasse
+            unique_labels = np.unique(all_sample_labels)
+            selected_sample_indices = []
+            for label in unique_labels:
+                label_sample_indices = [i for i, lbl in enumerate(all_sample_labels) if lbl == label]
+                if len(label_sample_indices) >= max_samples_per_class:
+                    selected_label_indices = np.random.choice(
+                        label_sample_indices, size=max_samples_per_class, replace=False
+                    )
+                    selected_sample_indices.extend(selected_label_indices)
+            all_data = [all_data[i] for i in selected_sample_indices]
+            all_sample_labels = [all_sample_labels[i] for i in selected_sample_indices]
+            all_original_indices = [all_original_indices[i] for i in selected_sample_indices]
+            print(f"      Genau {max_samples_per_class} Samples pro Klasse: {len(selected_sample_indices)} Samples gesamt")
+    
+    original_sample_indices = np.array(all_original_indices)  # (n_selected,) = H5 sample_0, sample_1, ...
     
     # Jeder Zeitpunkt (Zeitbin) wird ein Datenpunkt
-    # Jeder Timestep × Sample = ein Datenpunkt
     X_list = []
     labels_list = []
-    
-    for sample_data, sample_label in zip(all_data, all_sample_labels):
+    sample_indices_list = []
+    time_bin_indices_list = []
+    for sample_idx, (sample_data, sample_label) in enumerate(zip(all_data, all_sample_labels)):
         T, features = sample_data.shape
-        # Jeder Timestep wird ein Datenpunkt
-        X_list.append(sample_data)  # (T, features)
-        # Label für jeden Timestep wiederholen (gleiches Label für alle Zeitbins eines Samples)
+        X_list.append(sample_data)
         labels_list.append(np.repeat(sample_label, T))
+        sample_indices_list.append(np.repeat(sample_idx, T))
+        time_bin_indices_list.append(np.arange(T))
     
-    X = np.concatenate(X_list, axis=0)  # (N_samples * T, features)
-    labels = np.concatenate(labels_list, axis=0)  # (N_samples * T,)
+    X = np.concatenate(X_list, axis=0)
+    labels = np.concatenate(labels_list, axis=0)
+    sample_indices = np.concatenate(sample_indices_list, axis=0)
+    time_bin_indices = np.concatenate(time_bin_indices_list, axis=0)
     
     print(f"      Gesamt: {len(X)} Datenpunkte (aus {len(all_data)} Samples, je {all_data[0].shape[0]} Zeitbins)")
     
-    # Erstelle UMAP
     reducer = umap.UMAP(
         n_components=2,
         n_neighbors=n_neighbors,
         min_dist=min_dist,
         random_state=random_state,
-        low_memory=True
+        low_memory=True,
+        n_jobs=1,  # bei random_state erzwingt UMAP ohnehin 1 Thread; unterdrückt Warnung
     )
-    
     embedding = reducer.fit_transform(X)
     
-    return embedding, labels
+    return embedding, labels, sample_indices, time_bin_indices, original_sample_indices
 
 
-def create_umap_plot_for_layer(layer_name, activity_log_paths, output_path, num_neurons, max_samples_per_class=10):
+def create_umap_plot_for_layer(layer_name, activity_log_paths, output_path, num_neurons, max_samples_per_class=10,
+                               color_by='label', project_root=None):
     """
     Erstellt UMAP-Visualisierung für einen Layer mit allen Epochen als Subplots.
-    
-    Args:
-        layer_name: Name des Layers (z.B. 'lif0')
-        activity_log_paths: Liste von Pfaden zu Activity Log Dateien für diesen Layer (sortiert nach Epoche)
-        output_path: Pfad zum Speichern des Plots
-        num_neurons: Anzahl der Neuronen
-        max_samples_per_class: Maximale Anzahl Samples pro Klasse (default: 10)
+    color_by: 'label' | 'speaker' | 'gender' | 'timebin' – Färbung; jede Variante in separater Datei.
     """
-    print(f"📂 Layer: {layer_name}")
+    print(f"📂 Layer: {layer_name}, Färbung: {color_by}")
     print(f"   Epochen: {len(activity_log_paths)}")
     
-    # Erstelle Transform
     activity_log_transform = datatransforms.get_activity_logpreprocessing(
         num_neurons=num_neurons,
         fixed_duration=80,
         n_time_bins=10
     )
     
-    # Erstelle hochkontrastige Colormap für 20 Labels
-    custom_cmap = get_high_contrast_colormap(n_colors=20)
-    
-    # Erstelle Figure mit Subplots (4x5 für 20 Epochen)
     n_epochs = len(activity_log_paths)
     n_cols = 5
     n_rows = int(np.ceil(n_epochs / n_cols))
-    
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, 4 * n_rows), squeeze=False)
     axes = axes.flatten()
     
-    # Sammle alle Embeddings und Labels für gemeinsame Legende
+    custom_cmap_labels = get_high_contrast_colormap(n_colors=20)
     all_labels = None
+    max_sample_idx_seen = -1
+    speaker_ids_global = None
+    genders_global = None
+    last_epoch_labels = None
+    last_epoch_speaker_ids = None
+    last_epoch_genders = None
     
-    # Verarbeite jede Epoche
     for idx, activity_log_path in enumerate(activity_log_paths):
-        # Extrahiere Epoche aus Dateinamen
         match = re.match(r'.*epoch_(\d+)_', activity_log_path)
         epoch = int(match.group(1)) if match else idx + 1
-        
         print(f"   Verarbeite Epoche {epoch}...")
         
-        # Prüfe Anzahl Zeitbins vor Transformation
         try:
             with h5py.File(activity_log_path, 'r') as f:
-                # Prüfe zuerst Metadaten für time_steps
                 if 'time_steps' in f.attrs:
-                    time_steps = int(f.attrs['time_steps'])
-                    print(f"      Zeitbins vor Transformation (aus Metadaten): {time_steps}")
-                elif 'events' in f:
-                    events_group = f['events']
-                    sample_keys = sorted(events_group.keys())
-                    if len(sample_keys) > 0:
-                        # Prüfe mehrere Samples für Zeitbins
-                        all_times = []
-                        for sample_key in sample_keys[:min(10, len(sample_keys))]:  # Prüfe bis zu 10 Samples
-                            sample = events_group[sample_key]
-                            if 't' in sample.dtype.names and len(sample) > 0:
-                                times = sample['t']
-                                all_times.extend(times)
-                        
-                        if len(all_times) > 0:
-                            # Maximaler Zeitstempel + 1 = Anzahl Zeitbins (da 0-indexiert)
-                            max_time = np.max(all_times)
-                            # Oder zähle eindeutige Zeitstempel über alle Samples
-                            unique_times = len(np.unique(all_times))
-                            print(f"      Zeitbins vor Transformation: max_time+1={max_time+1}, unique_times={unique_times} (über {min(10, len(sample_keys))} Samples)")
-                        else:
-                            print(f"      Zeitbins vor Transformation: 0 (keine Events gefunden)")
-                    else:
-                        print(f"      Zeitbins vor Transformation: Keine Samples gefunden")
-                else:
-                    print(f"      Zeitbins vor Transformation: Keine Events-Gruppe gefunden")
-        except Exception as e:
-            print(f"      ⚠️  Konnte Zeitbins vor Transformation nicht lesen: {e}")
+                    pass  # optional debug
+        except Exception:
+            pass
         
-        # Lade Activity Log
+        # Speaker-IDs nur aus Activity-Log (Reihenfolge = sample_0, sample_1, …) für speaker-balanced Sampling
+        speaker_ids_epoch, genders_epoch = load_speaker_gender_from_activity_log_h5(activity_log_path, project_root)
+        speaker_ids_for_sampling = speaker_ids_epoch  # nur Activity-Log-Reihenfolge für Sampling
+        if speaker_ids_epoch is None and project_root:
+            speaker_ids_global, genders_global = load_speaker_gender_for_shd_order(project_root, 10000)
+        
         h5_dataset = H5Dataset(activity_log_path)
         transformed_dataset = TransformedDataset(h5_dataset, activity_log_transform)
-        dataloader = DataLoader(transformed_dataset, batch_size=64, shuffle=False, num_workers=0)
+        dataloader_obj = DataLoader(transformed_dataset, batch_size=64, shuffle=False, num_workers=0)
         
-        # Erstelle UMAP-Embedding
         try:
-            embedding, labels = create_umap_embedding(dataloader, max_samples_per_class=max_samples_per_class)
-            
-            # Speichere Labels für Legende (einmal)
+            embedding, labels, sample_indices, time_bin_indices, original_sample_indices = create_umap_embedding(
+                dataloader_obj, max_samples_per_class=max_samples_per_class, speaker_ids=speaker_ids_for_sampling,
+                min_samples_per_speaker=5,
+            )
             if all_labels is None:
                 all_labels = labels
+            max_sample_idx_seen = max(max_sample_idx_seen, int(np.max(sample_indices)))
+            # Pro Punkt: Index in der H5-Datei (für Speaker/Gender aus Activity-Log)
+            file_sample_per_point = original_sample_indices[sample_indices.astype(int)]
             
-            # Plot auf Subplot
-            ax = axes[idx]
-            
-            # Prüfe auf NaN oder extreme Werte
             valid_mask = ~np.any(np.isnan(embedding), axis=1) & ~np.any(np.isinf(embedding), axis=1)
             if not np.all(valid_mask):
                 embedding = embedding[valid_mask]
                 labels = labels[valid_mask]
+                sample_indices = sample_indices[valid_mask]
+                time_bin_indices = time_bin_indices[valid_mask]
+                file_sample_per_point = file_sample_per_point[valid_mask]
             
-            # Prüfe ob 3D oder 2D
+            # Farbvektor je nach color_by
+            if color_by == 'label':
+                c = labels
+                vmin, vmax = 0, 19
+                cmap = custom_cmap_labels
+            elif color_by == 'speaker':
+                # Bevorzugt: Speaker aus der Activity-Log-H5 (pro Epoche); Index = H5 sample_0, sample_1, ...
+                speaker_ids_epoch, genders_epoch = load_speaker_gender_from_activity_log_h5(
+                    activity_log_path, project_root
+                )
+                if speaker_ids_epoch is None and (speaker_ids_global is None and project_root):
+                    speaker_ids_global, genders_global = load_speaker_gender_for_shd_order(project_root, 10000)
+                use_speakers = speaker_ids_epoch if speaker_ids_epoch is not None else speaker_ids_global
+                if use_speakers is not None:
+                    if speaker_ids_epoch is not None:
+                        speaker_ids_global = speaker_ids_epoch
+                        genders_global = genders_epoch
+                    # Bei Daten aus Activity-Log: file_sample_per_point; sonst sample_indices
+                    idx_for_speaker = file_sample_per_point if speaker_ids_epoch is not None else sample_indices.astype(int)
+                    if np.max(idx_for_speaker) >= len(use_speakers):
+                        idx_for_speaker = np.minimum(idx_for_speaker, len(use_speakers) - 1)
+                    sid = use_speakers[idx_for_speaker]
+                    uniq = np.unique(sid)
+                    sid_ord = np.searchsorted(uniq, sid)
+                    c = sid_ord
+                    vmin, vmax = 0, max(len(uniq) - 1, 0)
+                    cmap = get_high_contrast_colormap(n_colors=max(len(uniq), 20))  # wie bei Labels
+                else:
+                    c = np.zeros(len(embedding))
+                    vmin, vmax = 0, 1
+                    cmap = 'viridis'
+            elif color_by == 'gender':
+                _, genders_epoch = load_speaker_gender_from_activity_log_h5(activity_log_path, project_root)
+                if genders_epoch is None and genders_global is None and project_root:
+                    if speaker_ids_global is None:
+                        speaker_ids_global, genders_global = load_speaker_gender_for_shd_order(project_root, 10000)
+                    else:
+                        _, genders_global = load_speaker_gender_for_shd_order(project_root, 10000)
+                use_genders = genders_epoch if genders_epoch is not None else genders_global
+                if use_genders is not None:
+                    if genders_epoch is not None:
+                        genders_global = genders_epoch
+                    idx_for_gender = file_sample_per_point if genders_epoch is not None else sample_indices.astype(int)
+                    if np.max(idx_for_gender) >= len(use_genders):
+                        idx_for_gender = np.minimum(idx_for_gender, len(use_genders) - 1)
+                    g = np.array([str(use_genders[i]).lower().strip() for i in idx_for_gender])
+                    c = (g == 'female').astype(int)
+                    vmin, vmax = 0, 1
+                    cmap = mcolors.ListedColormap(['#1f77b4', '#d62728'])  # Blau = Male, Rot = Female
+                    last_epoch_genders = g.copy()
+                else:
+                    c = np.zeros(len(embedding))
+                    vmin, vmax = 0, 1
+                    cmap = 'viridis'
+            else:  # timebin
+                c = time_bin_indices
+                vmin, vmax = 0, int(np.max(time_bin_indices))
+                cmap = 'viridis'
+            
+            ax = axes[idx]
             is_3d = embedding.shape[1] == 3
-            
             if is_3d:
-                # 3D Plot
                 ax.remove()
                 ax = fig.add_subplot(n_rows, n_cols, idx + 1, projection='3d')
-                scatter = ax.scatter(
-                    embedding[:, 0], 
-                    embedding[:, 1], 
-                    embedding[:, 2],
-                    c=labels, 
-                    cmap=custom_cmap,
-                    alpha=0.6, 
-                    s=20,
-                    edgecolors='k', 
-                    linewidths=0.5,
-                    vmin=0,
-                    vmax=19
+                sc = ax.scatter(
+                    embedding[:, 0], embedding[:, 1], embedding[:, 2],
+                    c=c, cmap=cmap, alpha=0.6, s=20, edgecolors='k', linewidths=0.5,
+                    vmin=vmin, vmax=vmax
                 )
                 ax.set_xlabel('UMAP 1', fontsize=8)
                 ax.set_ylabel('UMAP 2', fontsize=8)
                 ax.set_zlabel('UMAP 3', fontsize=8)
             else:
-                # 2D Plot
-                scatter = ax.scatter(
-                    embedding[:, 0], 
-                    embedding[:, 1], 
-                    c=labels, 
-                    cmap=custom_cmap,
-                    alpha=0.6, 
-                    s=20,
-                    edgecolors='k', 
-                    linewidths=0.5,
-                    vmin=0,
-                    vmax=19
+                sc = ax.scatter(
+                    embedding[:, 0], embedding[:, 1],
+                    c=c, cmap=cmap, alpha=0.6, s=20, edgecolors='k', linewidths=0.5,
+                    vmin=vmin, vmax=vmax
                 )
                 ax.set_xlabel('UMAP 1', fontsize=8)
                 ax.set_ylabel('UMAP 2', fontsize=8)
                 ax.grid(True, alpha=0.3)
             
+            if color_by == 'timebin':
+                plt.colorbar(sc, ax=ax, shrink=0.6, label='Time bin')
             ax.set_title(f'Epoch {epoch}', fontsize=10, fontweight='bold')
             
         except Exception as e:
@@ -313,53 +438,61 @@ def create_umap_plot_for_layer(layer_name, activity_log_paths, output_path, num_
             axes[idx].set_title(f'Epoch {epoch} (Error)', fontsize=10)
             continue
     
-    # Verstecke leere Subplots
     for idx in range(n_epochs, len(axes)):
         axes[idx].axis('off')
     
-    # Füge gemeinsame Legende hinzu (nur einmal)
-    if all_labels is not None:
-        # Erstelle eine unsichtbare Scatter für die Legende
-        unique_labels = np.unique(all_labels)
-        unique_labels = sorted(unique_labels)
-        
-        # Verwende den letzten Subplot für die Legende (wenn Platz vorhanden)
+    # Legende für label / speaker / gender (immer anzeigen; bei vollem Gitter unter der Figur)
+    if color_by == 'label' and all_labels is not None:
+        unique_labels = sorted(np.unique(all_labels))
+        handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=custom_cmap_labels(l / 19.0),
+                             markersize=10, markeredgecolor='k', markeredgewidth=0.5, label=f'Label {int(l)}')
+                  for l in unique_labels]
         if n_epochs < len(axes):
             legend_ax = axes[-1]
             legend_ax.axis('off')
-            
-            # Erstelle Legende mit allen Labels
-            handles = []
-            for label in unique_labels:
-                color = custom_cmap(label / 19.0)  # Normalisiere auf [0, 1]
-                handles.append(plt.Line2D([0], [0], marker='o', color='w', 
-                                        markerfacecolor=color, markersize=10, 
-                                        markeredgecolor='k', markeredgewidth=0.5,
-                                        label=f'Label {int(label)}'))
-            
-            legend_ax.legend(handles=handles, loc='center', ncol=2, fontsize=8, 
-                           title='Labels', title_fontsize=10, framealpha=0.9)
+            legend_ax.legend(handles=handles, loc='center', ncol=2, fontsize=8, title='Labels', title_fontsize=10, framealpha=0.9)
         else:
-            # Füge Legende außerhalb der Subplots hinzu
-            fig.legend(handles=[plt.Line2D([0], [0], marker='o', color='w', 
-                                          markerfacecolor=custom_cmap(i / 19.0), 
-                                          markersize=10, markeredgecolor='k',
-                                          label=f'Label {i}') 
-                               for i in unique_labels],
-                      loc='lower center', ncol=10, fontsize=8, 
-                      bbox_to_anchor=(0.5, -0.02))
+            fig.legend(handles=handles, loc='lower center', ncol=10, fontsize=8, bbox_to_anchor=(0.5, -0.02))
+    elif color_by == 'speaker' and speaker_ids_global is not None:
+        end = min(max_sample_idx_seen + 1, len(speaker_ids_global))
+        uniq_s = np.unique(speaker_ids_global[: end]) if end > 0 else np.array([])
+        if len(uniq_s) > 0:
+            # Gleiche Hochkontrast-Palette wie bei Labels (mind. 20 Farben)
+            n_s = max(len(uniq_s), 20)
+            cmap_s = get_high_contrast_colormap(n_colors=n_s)
+            handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=cmap_s(i / max(len(uniq_s) - 1, 1)),
+                                   markersize=10, markeredgecolor='k', markeredgewidth=0.5, label=f'Spk {int(uniq_s[i])}')
+                      for i in range(min(len(uniq_s), 20))]
+            if n_epochs < len(axes):
+                legend_ax = axes[-1]
+                legend_ax.axis('off')
+                legend_ax.legend(handles=handles, loc='center', ncol=2, fontsize=7, title='Speaker', title_fontsize=10, framealpha=0.9)
+            else:
+                fig.legend(handles=handles, loc='lower center', ncol=10, fontsize=7, bbox_to_anchor=(0.5, -0.02), title='Speaker')
+    elif color_by == 'gender':
+        if last_epoch_genders is not None:
+            g_flat = np.array([str(x).lower().strip() for x in last_epoch_genders])
+            n_male = int(np.sum(g_flat == 'male'))
+            n_female = int(np.sum(g_flat == 'female'))
+        else:
+            n_male = n_female = 0
+        handles_gender = [
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#1f77b4', markersize=10, markeredgecolor='k', label=f'Male (n={n_male})'),
+            plt.Line2D([0], [0], marker='o', color='w', markerfacecolor='#d62728', markersize=10, markeredgecolor='k', label=f'Female (n={n_female})'),
+        ]
+        if n_epochs < len(axes):
+            legend_ax = axes[-1]
+            legend_ax.axis('off')
+            legend_ax.legend(handles=handles_gender, loc='center', fontsize=10, framealpha=0.9)
+        else:
+            fig.legend(handles=handles_gender, loc='lower center', ncol=2, fontsize=10, bbox_to_anchor=(0.5, -0.02))
     
-    fig.suptitle(f'UMAP Visualization - {layer_name} (All Epochs)', 
-                fontsize=16, fontweight='bold', y=0.995)
+    fig.suptitle(f'UMAP - {layer_name} (by {color_by})', fontsize=16, fontweight='bold', y=0.995)
     plt.tight_layout(rect=[0, 0.03, 1, 0.98])
-    
-    # Speichere Plot
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
-    
     print(f"✅ Plot gespeichert: {output_path}\n")
-    
     return fig
 
 
@@ -368,7 +501,7 @@ if __name__ == "__main__":
     
     # Projekt-Root bestimmen
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-    activity_logs_path = os.path.join(project_root, "data", "activity_logs_ffn")
+    activity_logs_path = os.path.join(project_root, "data", "activity_logs_feed_forward")
     plots_dir = os.path.join(project_root, "data", "plots")
     
     # Prüfe ob Activity Logs Verzeichnis existiert
@@ -419,29 +552,38 @@ if __name__ == "__main__":
     print(f"📊 Gefunden: {len(activity_logs)} Activity Logs")
     print(f"📊 Layer: {list(layer_groups.keys())}\n")
     
-    # Konfiguration: Maximale Anzahl Samples pro Klasse
-    max_samples_per_class = 50  # Kann hier geändert werden
+    # Konfiguration: Exakt so viele Samples pro Klasse (Klassen mit weniger entfallen)
+    max_samples_per_class = 40  # Kann hier geändert werden
     
-    # Erstelle UMAP-Visualisierung für jeden Layer
+    # Pro Layer: 4 separate Dateien (by label, speaker, gender, timebin)
+    color_variants = [
+        ('label', 'labels'),
+        ('speaker', 'speaker'),
+        ('gender', 'gender'),
+        ('timebin', 'timebin'),
+    ]
+    
     for layer_name, activity_log_paths in layer_groups.items():
         if layer_name not in layer_neurons:
             print(f"⚠️  Überspringe {layer_name}: Keine Neuron-Information verfügbar")
             continue
         
-        output_path = os.path.join(plots_dir, f"{layer_name}_all_epochs_umap.png")
-        
-        try:
-            create_umap_plot_for_layer(
-                layer_name=layer_name,
-                activity_log_paths=activity_log_paths,
-                output_path=output_path,
-                num_neurons=layer_neurons[layer_name],
-                max_samples_per_class=max_samples_per_class
-            )
-        except Exception as e:
-            print(f"❌ Fehler bei Layer {layer_name}: {e}\n")
-            import traceback
-            traceback.print_exc()
-            continue
+        for color_by, suffix in color_variants:
+            output_path = os.path.join(plots_dir, f"{layer_name}_all_epochs_umap_{suffix}.png")
+            try:
+                create_umap_plot_for_layer(
+                    layer_name=layer_name,
+                    activity_log_paths=activity_log_paths,
+                    output_path=output_path,
+                    num_neurons=layer_neurons[layer_name],
+                    max_samples_per_class=max_samples_per_class,
+                    color_by=color_by,
+                    project_root=project_root,
+                )
+            except Exception as e:
+                print(f"❌ Fehler bei Layer {layer_name}, Färbung {color_by}: {e}\n")
+                import traceback
+                traceback.print_exc()
+                continue
     
     print("✅ Alle UMAP-Visualisierungen erstellt!")

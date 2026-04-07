@@ -92,6 +92,10 @@ def plot_manifold_metrics_over_layers_single_legend(
         all_epochs.update(layer_data[layer_name].keys())
     all_epochs = sorted(all_epochs)
     
+    # Filtere nur Epochen 1, 3 und 8
+    selected_epochs = [1, 3, 8]
+    all_epochs = [e for e in all_epochs if e in selected_epochs]
+    
     # Erstelle ein Subplot-Grid: 2 Zeilen × 2 Spalten
     # Links: Capacity (oben), Radius (unten)
     # Rechts: Dimension (oben), Correlation (unten)

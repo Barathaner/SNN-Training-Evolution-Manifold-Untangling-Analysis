@@ -457,7 +457,10 @@ def square_corrcoeff_full_cost(V, X, grad=True):
     C = np.matmul(X, X.T)
     c = np.matmul(X, V)
     c0 = np.diagonal(C).reshape(P, 1) - np.sum(np.square(c), axis=1, keepdims=True)
-    Fmn = np.square(C - np.matmul(c, c.T))/np.matmul(c0, c0.T)
+    denom = np.matmul(c0, c0.T)
+    eps = 1e-14
+    denom = np.where(denom >= eps, denom, eps)
+    Fmn = np.square(C - np.matmul(c, c.T)) / denom
     cost = np.sum(Fmn)/2
 
     if grad is False:  # skip gradient calc since not needed, or autograd is used
@@ -469,9 +472,9 @@ def square_corrcoeff_full_cost(V, X, grad=True):
         C1 = np.reshape(c, [P, 1, 1, K])
         C2 = np.reshape(c, [1, P, 1, K])
 
-        # Sum the terms in the gradient
-        PF1 = ((C - np.matmul(c, c.T))/np.matmul(c0, c0.T)).reshape(P, P, 1, 1) 
-        PF2 = (np.square(C - np.matmul(c, c.T))/np.square(np.matmul(c0, c0.T))).reshape(P, P, 1, 1)
+        # Sum the terms in the gradient (same denominator guard as above)
+        PF1 = ((C - np.matmul(c, c.T)) / denom).reshape(P, P, 1, 1)
+        PF2 = (np.square(C - np.matmul(c, c.T)) / np.square(denom)).reshape(P, P, 1, 1)
         Gmni = - PF1 * C1 * X1
         Gmni += - PF1 * C2 * X2
         Gmni +=  PF2 * c0.reshape(P, 1, 1, 1) * C2 * X1
